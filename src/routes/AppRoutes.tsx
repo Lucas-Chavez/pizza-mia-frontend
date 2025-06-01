@@ -1,23 +1,15 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import LandingPage from '../pages/landing/LandingPage.tsx';
-import ClientPage from '../pages/client/ClientPage.tsx';
-import AdminPage from '../pages/admin/AdminPage.tsx';
-import LoginAdmin from '../pages/admin/LoginAdmin/LoginAdmin'; 
+import Dashboard from '../layout/AdminLayout';
+import Login from '../features/login/Login'; 
 
 
 
 const AppRoutes = () => {
     return (
         <Router>
-            <Routes>
-                {/* Ruta para la landing page */}
-                <Route path="/" element={<LandingPage />} />
-                
-                {/* Rutas para el cliente */}
-                <Route path="/client/*" element={<ClientPage />} />
-                
+            <Routes>                
                 {/* Ruta de login para el administrador */}
-                <Route path="/admin/login" element={<LoginAdmin />} />
+                <Route path="/admin/login" element={<Login />} />
                 
                 {/* Rutas para el administrador */}
                 {/* Redirigir la ruta administracion para que siempre vaya a roles por defecto */}
@@ -25,16 +17,15 @@ const AppRoutes = () => {
                 <Route path="/admin/rubros" element={<Navigate to="/admin/rubros/insumos" replace />} />
                 
                 {/* Rutas específicas para la sección administración */}
-                <Route path="/admin/administracion/:section" element={<AdminPage />} />
-                <Route path="/admin/rubros/:section" element={<AdminPage />} />
+                <Route path="/admin/administracion/:section" element={<Dashboard />} />
+                <Route path="/admin/rubros/:section" element={<Dashboard />} />
                 
                 {/* Otras rutas del admin */}
-                <Route path="/admin/rubros" element={<AdminPage />} />
-                <Route path="/admin/insumos" element={<AdminPage />} />
-                <Route path="/admin/productos" element={<AdminPage />} />
-                <Route path="/admin/gestion" element={<AdminPage />} />
-                <Route path="/admin/estadisticas" element={<AdminPage />} />
-                <Route path="/admin/seguridad" element={<AdminPage />} />
+Dashboard       <Route path="/admin/insumos" element={<Dashboard />} />
+                <Route path="/admin/productos" element={<Dashboard />} />
+                <Route path="/admin/gestion" element={<Dashboard />} />
+                <Route path="/admin/estadisticas" element={<Dashboard />} />
+                <Route path="/admin/seguridad" element={<Dashboard />} />
                 
                 {/* Ruta por defecto para admin */}
                 <Route path="/admin" element={<Navigate to="/admin/administracion/roles" replace />} />

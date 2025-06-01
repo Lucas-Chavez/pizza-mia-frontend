@@ -1,94 +1,65 @@
-# Frontend - Proyecto "Pizza Mia"
+# Pizza Mia - Frontend (Dashboard Administrador)
 
-## 🏢 Descripción General
+##  🏢 Descripción General
 
-El proyecto "Pizza Mia" consiste en el desarrollo de una aplicación frontend utilizando React + TypeScript + Vite, que incluye:
+Este proyecto es el frontend del dashboard para el administrador de Pizza Mia, desarrollado con **React**, **TypeScript** y **Vite** como bundler y servidor de desarrollo.
 
--   Una landing page de acceso público.
--   Un sistema de ecommerce para clientes.
--   Un panel de administración exclusivo para el administrador.
+Está diseñado para ser modular y escalable, con una arquitectura basada en funcionalidades (feature-based) que agrupa componentes, estilos y lógica por módulos funcionales.
 
-Cada una de estas tres áreas tiene sus propios componentes y vistas. No se comparten componentes reutilizables entre cliente, administrador o landing.
-
-## 📁 Estructura de Carpetas Propuesta
-
+##  📁 Estructura de Carpetas
 ```
 pizza-mia-frontend/
 ├── public/
 ├── src/
-│   ├── assets/               # Imágenes, logos, fuentes, etc.
-│   ├── components/           # Componentes divididos por dominio
-│   │   ├── Admin/              # Componentes reutilizables exclusivos del administrador
-│   │   ├── Client/             # Componentes reutilizables exclusivos del cliente
-│   │   ├── Landing/            # Componentes reutilizables exclusivos de la landing
-│   │   └── Global/             # Componentes compartidos generales (si los hubiera)
-│   ├── layouts/              # Layouts compartidos entre vistas
-│   ├── routes/               # Definiciones de rutas (React Router)
-│   ├── services/             # Servicios y llamadas HTTP a APIs
-│   ├── types/                # Tipos e interfaces TypeScript globales
-│   ├── utils/                # Funciones utilitarias
-│   ├── styles/               # Estilos globales y específicos por dominio
-│   │   ├── base/             # Reset, tipografías, estilos globales
-│   │   ├── themes/           # Estilos específicos por dominio
-│   │   │   ├── landing.css
-│   │   │   ├── client.css
-│   │   │   └── admin.css
-│   │   ├── variables.css     # Variables CSS globales (colores, fuentes, etc.)
-│   │   └── index.css         # Entrada principal de estilos globales
-│   ├── pages/
-│   │   ├── landing/
-│   │   │   └── modules/     # (opcional) Secciones reutilizables o vistas divididas por áreas temáticas
-│   │   ├── client/
-│   │   │   └── modules/     # (opcional) Secciones si se dividen vistas del cliente
-│   │   └── admin/
-│   │       └── modules/     # Vistas por sección del panel admin
-│   │       
-│   ├── contexts/             # Context API (Auth, carrito, etc.)
-│   ├── hooks/                # Custom hooks (useAuth, useCart, etc.)
-│   ├── App.tsx               # Componente principal
-│   └── main.tsx              # Punto de entrada de la aplicación
+│   ├── assets/                 # Íconos, imágenes y recursos estáticos
+│   │   └── icons/
+│   ├── components/             # Componentes reutilizables generales (botones, navbar, sidebar, tablas genéricas)
+│   ├── features/               # Módulos funcionales del dashboard (administración, insumos, productos, etc.)
+│   ├── layout/                 # Layouts generales (e.g. dashboard)
+│   ├── api/                    # Lógica de comunicación con el backend
+│   ├── types/                  # Definiciones TypeScript (interfaces y tipos)
+│   ├── styles/                 # Estilos globales, variables y temas
+│   ├── routes/                 # Rutas de la aplicación
+│   ├── App.tsx
+│   └── main.tsx
 ├── index.html
 ├── package.json
 ├── tsconfig.json
 └── vite.config.ts
+
 ```
+ 
+##  🔄 Rutas Principales
 
-## 🔄 Rutas Principales
+-  `/admin/*` ➜ Portal de administradores (gestión de productos, pedidos, etc.)
 
--   `/` ➜ Landing page
--   `/client/*` ➜ Portal de clientes (compras, productos, perfil, etc.)
--   `/admin/*` ➜ Portal de administradores (gestión de productos, pedidos, etc.)
-
-## 📦 Dependencias Instaladas
+##  📦 Dependencias Instaladas
 
 Estas son las principales dependencias utilizadas en el proyecto:
-
-```bash
-npm install react-router-dom
-npm install chart.js react-chartjs-2
-npm install xlsx
-npm install file-saver
-npm install --save-dev @types/file-saver
-npm install exceljs 
-npm install html2canvas
 ```
+npm  install  react-router-dom
+npm  install  chart.js  react-chartjs-2
+npm  install  xlsx
+npm  install  file-saver
+npm  install  --save-dev  @types/file-saver
+npm  install  exceljs
+npm  install  html2canvas
+```
+### Descripción de dependencias
+-   **react-router-dom**: manejo de rutas SPA
+-   **chart.js y react-chartjs-2**: gráficos
+-   **xlsx, file-saver, exceljs, html2canvas**: exportación y captura de datos
 
--   **react-router-dom**: para el manejo de rutas en la SPA.
-
-
-## 🌐 Repositorio del Proyecto
-
+##  🌐 Repositorio del Proyecto
 Repositorio oficial de este frontend: https://github.com/Lucas-Chavez/pizza-mia-frontend.git
 
-## 📥 Clonación del proyecto
+##  📥 Clonación del proyecto
 
 Para clonar el repositorio en tu máquina local:
-
-```bash
-git clone https://github.com/Lucas-Chavez/pizza-mia-frontend.git
-cd pizza-mia-frontend
-npm install
-npm run dev
 ```
-
+git  clone  https://github.com/Lucas-Chavez/pizza-mia-frontend.git
+cd  pizza-mia-frontend
+npm  install
+npm  run  dev
+```
 Nombre del archivo raíz del proyecto: `pizza-mia-frontend`
