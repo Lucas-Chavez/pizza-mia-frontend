@@ -75,6 +75,24 @@ export const InsumosTable: React.FC<InsumosTableProps> = ({
             },
         },
         {
+            header: "Costo",
+            key: "precioCompra",
+            render: (value: number) => (
+                <span>
+                    ${value.toFixed(2)}
+                </span>
+            ),
+        },
+        {
+            header: "Precio Venta",
+            key: "precioVenta",
+            render: (value: number) => (
+                <span>
+                    ${value.toFixed(2)}
+                </span>
+            ),
+        },
+        {
             header: "Reponer",
             key: "reponer",
             render: (_: any, row: InsumoApi) => (
