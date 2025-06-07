@@ -152,3 +152,17 @@ ReponerStockModal.tsx
     resize: vertical;
     margin-top: 10px;
 }
+
+/* Agregar estos estilos a tu módulo CSS existente */
+.paginationContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.paginationInfo {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}

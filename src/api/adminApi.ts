@@ -8,13 +8,29 @@ import {
 } from "../types/adminTypes";
 
 // Funciones para manejar Insumos en InsumosSection en el backend
-export const fetchInsumos = async (): Promise<InsumoApi[]> => {
-    const res = await fetch("/api/insumos");
-    const data: InsumoApi[] = await res.json();
-    return data.map(insumo => ({
-        ...insumo,
-        estado: insumo.fechaBaja === null ? "Activo" : "Inactivo"
-    }));
+export const fetchInsumos = async (
+  page: number = 0,
+  size: number = 10,
+  sort: string = "id"
+): Promise<{
+  content: InsumoApi[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+}> => {
+    const res = await fetch(`/api/insumos?page=${page}&size=${size}&sort=${sort}`);
+    if (!res.ok) throw new Error('Error al obtener insumos');
+    const data = await res.json();
+    
+    // Mapear el contenido para añadir la propiedad estado
+    return {
+        ...data,
+        content: data.content.map((insumo: InsumoApi) => ({
+            ...insumo,
+            estado: insumo.fechaBaja === null ? "Activo" : "Inactivo"
+        }))
+    };
 };
 
 export const patchEstadoInsumo = async (id: number) => {
