@@ -5,7 +5,7 @@ import {
     RubroTable, 
     ArticuloManufacturadoApi,
     ArticuloManufacturadoDetalleApi
-} from "../types/typesAdmin";
+} from "../types/adminTypes";
 
 // Funciones para manejar Insumos en InsumosSection en el backend
 export const fetchInsumos = async (): Promise<InsumoApi[]> => {
