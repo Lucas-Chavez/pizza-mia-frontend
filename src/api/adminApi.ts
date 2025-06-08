@@ -10,7 +10,7 @@ import {
 // Funciones para manejar Insumos en InsumosSection en el backend
 export const fetchInsumos = async (
   page: number = 0,
-  size: number = 10,
+  size: number = 8,
   sort: string = "id"
 ): Promise<{
   content: InsumoApi[];
@@ -160,13 +160,29 @@ export const createRegistroInsumo = async (registroData: RegistroInsumoApi) => {
 };
 
 // Funciones para manejar Artículos Manufacturados
-export const fetchArticulosManufacturados = async (): Promise<ArticuloManufacturadoApi[]> => {
-    const res = await fetch("/api/manufacturados");
-    const data: ArticuloManufacturadoApi[] = await res.json();
-    return data.map(articulo => ({
-        ...articulo,
-        estado: articulo.fechaBaja === null ? "Activo" : "Inactivo"
-    }));
+export const fetchArticulosManufacturados = async (
+  page: number = 0,
+  size: number = 8,
+  sort: string = "id"
+): Promise<{
+  content: ArticuloManufacturadoApi[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+}> => {
+    const res = await fetch(`/api/manufacturados?page=${page}&size=${size}&sort=${sort}`);
+    if (!res.ok) throw new Error('Error al obtener artículos manufacturados');
+    const data = await res.json();
+    
+    // Mapear el contenido para añadir la propiedad estado
+    return {
+        ...data,
+        content: data.content.map((articulo: ArticuloManufacturadoApi) => ({
+            ...articulo,
+            estado: articulo.fechaBaja === null ? "Activo" : "Inactivo"
+        }))
+    };
 };
 
 export const patchEstadoArticuloManufacturado = async (id: number) => {

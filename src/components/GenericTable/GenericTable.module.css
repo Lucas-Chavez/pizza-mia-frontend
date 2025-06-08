@@ -4,7 +4,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     /* Altura máxima para scroll */
-    max-height: 300px;
+    max-height: 600px;
 }
 
 /* Scroll personalizado para navegadores webkit */
