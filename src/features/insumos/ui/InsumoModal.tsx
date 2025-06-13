@@ -3,11 +3,11 @@ import { InsumoApi, RubroApi } from "../../../types/adminTypes";
 import styles from "../InsumosSection.module.css";
 import shared from "../../../styles/common/Common.module.css";
 
-interface EditarInsumoModalProps {
+interface InsumoModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (id: number, insumoData: any, imageFile?: File) => Promise<void>;
-    insumo: InsumoApi | null;
+    onSubmit: (id: number | null, insumoData: any, imageFile?: File) => Promise<void>;
+    insumo?: InsumoApi | null; // Opcional - si existe es edición, si no es creación
     rubros: RubroApi[];
 }
 
@@ -17,14 +17,16 @@ const UNIDADES = [
     { value: "UNIDADES", label: "Unidades" },
 ];
 
-export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
+export const InsumoModal: React.FC<InsumoModalProps> = ({
     isOpen,
     onClose,
     onSubmit,
-    insumo,
+    insumo = null,
     rubros,
 }) => {
-    const [editInsumo, setEditInsumo] = useState<any>(null);
+    const isEditMode = !!insumo;
+    
+    const [formData, setFormData] = useState<any>(null);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -34,31 +36,48 @@ export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
 
     // Rubros principales (sin padre)
     const rubrosPrincipales = rubros.filter(r => r.tipoRubro === "INSUMO" && r.rubroPadre == null);
+    
     // Subrubros según rubro seleccionado
-    const subRubrosEdit = rubros.filter(
-        r => r.rubroPadre && r.rubroPadre.id === Number(editInsumo?.rubro)
+    const subRubros = rubros.filter(
+        r => r.rubroPadre && r.rubroPadre.id === Number(formData?.rubro)
     );
 
+    // Inicializar formulario cuando se abre el modal
     useEffect(() => {
-        if (insumo) {
-            setEditInsumo({
-                ...insumo,
-                rubro: insumo.rubro?.id ? String(insumo.rubro.id) : "",
-                subRubro: "",
-                esParaElaborar: typeof insumo.esParaElaborar === "boolean" ? insumo.esParaElaborar : false,
-            });
+        if (isOpen) {
+            if (isEditMode && insumo) {
+                // Modo edición - cargar datos del insumo
+                setFormData({
+                    ...insumo,
+                    rubro: insumo.rubro?.id ? String(insumo.rubro.id) : "",
+                    subRubro: "",
+                    esParaElaborar: typeof insumo.esParaElaborar === "boolean" ? insumo.esParaElaborar : false,
+                });
 
-            // Si hay imagen, mostrarla en el preview
-            if (insumo.imagen?.urlImagen) {
-                setPreviewUrl(insumo.imagen.urlImagen);
+                // Si hay imagen, mostrarla en el preview
+                if (insumo.imagen?.urlImagen) {
+                    setPreviewUrl(insumo.imagen.urlImagen);
+                } else {
+                    setPreviewUrl(null);
+                }
             } else {
+                // Modo creación - formulario vacío con todos los campos
+                setFormData({
+                    denominacion: "",
+                    rubro: "",
+                    subRubro: "",
+                    unidadMedida: "",
+                    precioCompra: "",
+                    precioVenta: "",
+                    esParaElaborar: false,
+                });
                 setPreviewUrl(null);
             }
-
+            
             setSelectedFile(null);
             setError("");
         }
-    }, [insumo]);
+    }, [isOpen, isEditMode, insumo]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -75,48 +94,66 @@ export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
     };
 
     const handleSubmit = async () => {
-        if (!editInsumo.denominacion.trim()) {
+        // Validaciones comunes
+        if (!formData.denominacion.trim()) {
             setError("El nombre del insumo es obligatorio");
             return;
         }
-        if (!editInsumo.rubro) {
+        if (!formData.rubro) {
             setError("Debe seleccionar un rubro");
             return;
         }
-        if (!editInsumo.unidadMedida) {
+        if (!formData.unidadMedida) {
             setError("Debe seleccionar una unidad");
             return;
         }
-        if (editInsumo.precioCompra === "" || isNaN(Number(editInsumo.precioCompra))) {
+
+        // Validaciones para ambos modos (creación y edición)
+        if (formData.precioCompra !== "" && (isNaN(Number(formData.precioCompra)) || Number(formData.precioCompra) < 0)) {
             setError("Debe ingresar un precio de compra válido");
             return;
         }
-        if (editInsumo.precioVenta === "" || isNaN(Number(editInsumo.precioVenta))) {
+        if (formData.precioVenta !== "" && (isNaN(Number(formData.precioVenta)) || Number(formData.precioVenta) < 0)) {
             setError("Debe ingresar un precio de venta válido");
             return;
         }
 
-        // Construir el objeto para la API
-        const body = {
-            denominacion: editInsumo.denominacion,
-            precioCompra: Number(editInsumo.precioCompra),
-            precioVenta: Number(editInsumo.precioVenta),
-            unidadMedida: editInsumo.unidadMedida,
-            rubro: { id: editInsumo.subRubro || editInsumo.rubro },
-            esParaElaborar: editInsumo.esParaElaborar,
-            stockActual: editInsumo.stockActual,
-            imagen: !selectedFile && editInsumo.imagen?.id ? {
-                id: editInsumo.imagen.id,
-                urlImagen: editInsumo.imagen.urlImagen
-            } : undefined
-        };
-
         setIsLoading(true);
         try {
-            await onSubmit(editInsumo.id, body, selectedFile || undefined);
+            let insumoData;
+            
+            if (isEditMode) {
+                // Estructura para edición
+                insumoData = {
+                    denominacion: formData.denominacion,
+                    precioCompra: Number(formData.precioCompra) || 0,
+                    precioVenta: Number(formData.precioVenta) || 0,
+                    unidadMedida: formData.unidadMedida,
+                    rubro: { id: formData.subRubro || formData.rubro },
+                    esParaElaborar: formData.esParaElaborar,
+                    stockActual: formData.stockActual,
+                    // Mantener la imagen existente solo si no se seleccionó una nueva
+                    imagen: !selectedFile && formData.imagen?.id ? {
+                        id: formData.imagen.id,
+                        urlImagen: formData.imagen.urlImagen
+                    } : undefined
+                };
+            } else {
+                // Estructura para creación - ahora incluye todos los campos
+                insumoData = {
+                    denominacion: formData.denominacion,
+                    unidadMedida: formData.unidadMedida,
+                    rubro: { id: formData.subRubro || formData.rubro },
+                    precioCompra: Number(formData.precioCompra) || 0,
+                    precioVenta: Number(formData.precioVenta) || 0,
+                    esParaElaborar: formData.esParaElaborar,
+                };
+            }
+            
+            await onSubmit(isEditMode ? formData.id : null, insumoData, selectedFile || undefined);
             onClose();
         } catch (err) {
-            setError("Error al editar el insumo");
+            setError(`Error al ${isEditMode ? 'editar' : 'crear'} el insumo`);
         } finally {
             setIsLoading(false);
         }
@@ -127,12 +164,12 @@ export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
         onClose();
     };
 
-    if (!isOpen || !editInsumo) return null;
+    if (!isOpen || !formData) return null;
 
     return (
         <div className={shared.modalOverlay}>
             <div className={`${shared.modalContent} ${styles.modalContent}`} style={{ minWidth: 800, maxWidth: 900 }}>
-                <h2>Editar Insumo</h2>
+                <h2>{isEditMode ? 'Editar Insumo' : 'Nuevo Insumo'}</h2>
                 <div style={{ display: "flex", gap: 24, width: "100%" }}>
                     {/* Columna 1 */}
                     <div className={styles.editarModalCol}>
@@ -140,42 +177,44 @@ export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
                             className={`${shared.input} ${styles.input}`}
                             type="text"
                             placeholder="Nombre Insumo"
-                            value={editInsumo.denominacion}
-                            onChange={e => setEditInsumo({ ...editInsumo, denominacion: e.target.value })}
+                            value={formData.denominacion}
+                            onChange={e => setFormData({ ...formData, denominacion: e.target.value })}
                             disabled={isLoading}
                         />
+                        {/* Campos de precio y esParaElaborar ahora aparecen en ambos modos */}
                         <input
                             className={`${shared.input} ${styles.input}`}
                             type="number"
                             placeholder="Precio Compra"
-                            value={editInsumo.precioCompra === 0 ? "" : editInsumo.precioCompra}
-                            onChange={e => setEditInsumo({ ...editInsumo, precioCompra: e.target.value })}
+                            value={formData.precioCompra === 0 ? "" : formData.precioCompra}
+                            onChange={e => setFormData({ ...formData, precioCompra: e.target.value })}
                             disabled={isLoading}
                         />
                         <input
                             className={`${shared.input} ${styles.input}`}
                             type="number"
                             placeholder="Precio Venta"
-                            value={editInsumo.precioVenta === 0 ? "" : editInsumo.precioVenta}
-                            onChange={e => setEditInsumo({ ...editInsumo, precioVenta: e.target.value })}
+                            value={formData.precioVenta === 0 ? "" : formData.precioVenta}
+                            onChange={e => setFormData({ ...formData, precioVenta: e.target.value })}
                             disabled={isLoading}
                         />
                         <select
                             className={`${shared.input} ${styles.input}`}
-                            value={editInsumo.esParaElaborar ? "true" : "false"}
-                            onChange={e => setEditInsumo({ ...editInsumo, esParaElaborar: e.target.value === "true" })}
+                            value={formData.esParaElaborar ? "true" : "false"}
+                            onChange={e => setFormData({ ...formData, esParaElaborar: e.target.value === "true" })}
                             disabled={isLoading}
                         >
                             <option value="true">¿Es para elaborar? Sí</option>
                             <option value="false">¿Es para elaborar? No</option>
                         </select>
                     </div>
+                    
                     {/* Columna 2 */}
                     <div className={styles.editarModalCol}>
                         <select
                             className={`${shared.input} ${styles.input}`}
-                            value={editInsumo.rubro}
-                            onChange={e => setEditInsumo({ ...editInsumo, rubro: e.target.value, subRubro: "" })}
+                            value={formData.rubro}
+                            onChange={e => setFormData({ ...formData, rubro: e.target.value, subRubro: "" })}
                             disabled={isLoading}
                         >
                             <option value="">Seleccione un rubro</option>
@@ -185,19 +224,19 @@ export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
                         </select>
                         <select
                             className={`${shared.input} ${styles.input}`}
-                            value={editInsumo.subRubro}
-                            onChange={e => setEditInsumo({ ...editInsumo, subRubro: e.target.value })}
-                            disabled={!editInsumo.rubro || subRubrosEdit.length === 0 || isLoading}
+                            value={formData.subRubro}
+                            onChange={e => setFormData({ ...formData, subRubro: e.target.value })}
+                            disabled={!formData.rubro || subRubros.length === 0 || isLoading}
                         >
                             <option value="">Seleccione un sub-rubro</option>
-                            {subRubrosEdit.map(r => (
+                            {subRubros.map(r => (
                                 <option key={r.id} value={r.id}>{r.denominacion}</option>
                             ))}
                         </select>
                         <select
                             className={`${shared.input} ${styles.input}`}
-                            value={editInsumo.unidadMedida}
-                            onChange={e => setEditInsumo({ ...editInsumo, unidadMedida: e.target.value })}
+                            value={formData.unidadMedida}
+                            onChange={e => setFormData({ ...formData, unidadMedida: e.target.value })}
                             disabled={isLoading}
                         >
                             <option value="">Seleccione una unidad</option>
@@ -206,6 +245,7 @@ export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
                             ))}
                         </select>
                     </div>
+                    
                     {/* Columna 3: Imagen */}
                     <div className={styles.editarModalCol} style={{ alignItems: "center", justifyContent: "center" }}>
                         <div className={styles.imageUploadContainer}>
@@ -236,19 +276,21 @@ export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isLoading}
                             >
-                                Cambiar Imagen
+                                {isEditMode ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
                             </button>
                         </div>
                     </div>
                 </div>
+                
                 {error && <div className={shared.error}>{error}</div>}
+                
                 <div className={shared.modalActions}>
                     <button
                         className={shared.enviarButton}
                         onClick={handleSubmit}
                         disabled={isLoading}
                     >
-                        {isLoading ? "Guardando..." : "Confirmar"}
+                        {isLoading ? (isEditMode ? "Guardando..." : "Creando...") : "Confirmar"}
                     </button>
                     <button
                         className={shared.salirButton}
@@ -263,4 +305,4 @@ export const EditarInsumoModal: React.FC<EditarInsumoModalProps> = ({
     );
 };
 
-export default EditarInsumoModal;
+export default InsumoModal;

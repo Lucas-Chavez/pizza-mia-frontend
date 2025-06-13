@@ -1,35 +1,28 @@
-import React, { useState, useRef } from "react";
-import { RubroApi, InsumoApi, ArticuloManufacturadoDetalleApi } from "../../../types/adminTypes";
+import React, { useState, useEffect, useRef } from "react";
+import { ArticuloManufacturadoApi, RubroApi, InsumoApi, ArticuloManufacturadoDetalleApi } from "../../../types/adminTypes";
 import styles from "../ProductosSection.module.css";
 import shared from "../../../styles/common/Common.module.css";
 
-interface NuevoProductoModalProps {
+interface ProductoModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (productoData: {
-        denominacion: string;
-        descripcion: string;
-        tiempoEstimadoProduccion: number;
-        rubro: string;
-        detalles: ArticuloManufacturadoDetalleApi[];
-    }, imageFile?: File) => Promise<void>;
+    onSubmit: (id: number | null, productoData: any, imageFile?: File) => Promise<void>;
+    producto?: ArticuloManufacturadoApi | null; // Opcional - si existe es edición, si no es creación
     rubros: RubroApi[];
     insumos: InsumoApi[];
 }
 
-export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
+export const ProductoModal: React.FC<ProductoModalProps> = ({
     isOpen,
     onClose,
     onSubmit,
+    producto = null,
     rubros,
     insumos
 }) => {
-    const [nuevoProducto, setNuevoProducto] = useState({
-        denominacion: "",
-        descripcion: "",
-        tiempoEstimadoProduccion: "",
-        rubro: "",
-    });
+    const isEditMode = !!producto;
+    
+    const [formData, setFormData] = useState<any>(null);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -39,13 +32,6 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
         insumoId: "",
         cantidad: ""
     });
-
-    const calcularPrecioCosto = () => {
-        return detalles.reduce((total, detalle) => {
-            const precioInsumo = detalle.articuloInsumo.precioCompra || 0;
-            return total + (precioInsumo * detalle.cantidad);
-        }, 0);
-    };
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,6 +40,51 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
     
     // Insumos filtrados (solo los que son para elaborar)
     const insumosParaElaborar = insumos.filter(i => i.esParaElaborar && i.estado === "Activo");
+
+    // Inicializar formulario cuando se abre el modal
+    useEffect(() => {
+        if (isOpen) {
+            if (isEditMode && producto) {
+                // Modo edición - cargar datos del producto
+                setFormData({
+                    ...producto,
+                    rubro: producto.rubro?.id ? String(producto.rubro.id) : "",
+                });
+                
+                // Inicializar detalles
+                setDetalles(producto.detalles || []);
+                
+                // Si hay imagen, mostrarla en el preview
+                if (producto.imagen?.urlImagen) {
+                    setPreviewUrl(producto.imagen.urlImagen);
+                } else {
+                    setPreviewUrl(null);
+                }
+            } else {
+                // Modo creación - formulario vacío
+                setFormData({
+                    denominacion: "",
+                    descripcion: "",
+                    tiempoEstimadoProduccion: "",
+                    precioVenta: "",
+                    rubro: "",
+                });
+                setDetalles([]);
+                setPreviewUrl(null);
+            }
+            
+            setSelectedFile(null);
+            setError("");
+            setNuevoDetalle({ insumoId: "", cantidad: "" });
+        }
+    }, [isOpen, isEditMode, producto]);
+
+    const calcularPrecioCosto = () => {
+        return detalles.reduce((total, detalle) => {
+            const precioInsumo = detalle.articuloInsumo.precioCompra || 0;
+            return total + (precioInsumo * detalle.cantidad);
+        }, 0);
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -94,7 +125,7 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
                 id: Number(nuevoDetalle.insumoId),
                 denominacion: insumoSeleccionado.denominacion,
                 unidadMedida: insumoSeleccionado.unidadMedida,
-                precioCompra: insumoSeleccionado.precioCompra // Agregamos el precio de compra aquí
+                precioCompra: insumoSeleccionado.precioCompra
             }
         };
 
@@ -110,21 +141,22 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
     };
 
     const handleSubmit = async () => {
-        if (!nuevoProducto.denominacion.trim()) {
+        // Validaciones comunes
+        if (!formData.denominacion.trim()) {
             setError("El nombre del producto es obligatorio");
             return;
         }
-        if (!nuevoProducto.descripcion.trim()) {
+        if (!formData.descripcion.trim()) {
             setError("La descripción es obligatoria");
             return;
         }
-        if (!nuevoProducto.rubro) {
+        if (!formData.rubro) {
             setError("Debe seleccionar un rubro");
             return;
         }
-        if (nuevoProducto.tiempoEstimadoProduccion === "" || 
-            isNaN(Number(nuevoProducto.tiempoEstimadoProduccion)) || 
-            Number(nuevoProducto.tiempoEstimadoProduccion) <= 0) {
+        if (formData.tiempoEstimadoProduccion === "" || 
+            isNaN(Number(formData.tiempoEstimadoProduccion)) || 
+            Number(formData.tiempoEstimadoProduccion) <= 0) {
             setError("Debe ingresar un tiempo de preparación válido");
             return;
         }
@@ -132,65 +164,79 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
             setError("Debe agregar al menos un ingrediente");
             return;
         }
-        if (!selectedFile) {
-            setError("Debe seleccionar una imagen para el producto");
-            return;
+
+        // Validaciones específicas por modo
+        if (isEditMode) {
+            if (formData.precioVenta === "" || 
+                isNaN(Number(formData.precioVenta)) || 
+                Number(formData.precioVenta) <= 0) {
+                setError("Debe ingresar un precio de venta válido");
+                return;
+            }
+        } else {
+            // En modo creación, la imagen es obligatoria
+            if (!selectedFile) {
+                setError("Debe seleccionar una imagen para el producto");
+                return;
+            }
         }
 
         setIsLoading(true);
         try {
-            const productoData = {
-                denominacion: nuevoProducto.denominacion,
-                descripcion: nuevoProducto.descripcion,
-                tiempoEstimadoProduccion: Number(nuevoProducto.tiempoEstimadoProduccion),
-                rubro: nuevoProducto.rubro,
-                detalles: detalles.map(d => ({
-                    cantidad: d.cantidad,
-                    articuloInsumo: { id: d.articuloInsumo.id }
-                }))
-            };
+            let productoData;
             
-            await onSubmit(productoData, selectedFile);
+            if (isEditMode) {
+                // Estructura para edición
+                productoData = {
+                    denominacion: formData.denominacion,
+                    descripcion: formData.descripcion,
+                    precioVenta: Number(formData.precioVenta),
+                    tiempoEstimadoProduccion: Number(formData.tiempoEstimadoProduccion),
+                    rubro: { id: formData.rubro },
+                    detalles: detalles.map(d => ({
+                        cantidad: d.cantidad,
+                        articuloInsumo: { id: d.articuloInsumo.id }
+                    })),
+                    // Mantener la imagen existente solo si no se seleccionó una nueva
+                    imagen: !selectedFile && formData.imagen?.id ? { 
+                        id: formData.imagen.id,
+                        urlImagen: formData.imagen.urlImagen 
+                    } : undefined
+                };
+            } else {
+                // Estructura para creación
+                productoData = {
+                    denominacion: formData.denominacion,
+                    descripcion: formData.descripcion,
+                    tiempoEstimadoProduccion: Number(formData.tiempoEstimadoProduccion),
+                    rubro: formData.rubro,
+                    detalles: detalles.map(d => ({
+                        cantidad: d.cantidad,
+                        articuloInsumo: { id: d.articuloInsumo.id }
+                    }))
+                };
+            }
             
-            // Reiniciar el formulario
-            setNuevoProducto({
-                denominacion: "",
-                descripcion: "",
-                tiempoEstimadoProduccion: "",
-                rubro: "",
-            });
-            setDetalles([]);
-            setSelectedFile(null);
-            setPreviewUrl(null);
-            setError("");
+            await onSubmit(isEditMode ? formData.id : null, productoData, selectedFile || undefined);
             onClose();
         } catch (err) {
-            setError("Error al crear el producto");
+            setError(`Error al ${isEditMode ? 'editar' : 'crear'} el producto`);
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleClose = () => {
-        setNuevoProducto({
-            denominacion: "",
-            descripcion: "",
-            tiempoEstimadoProduccion: "",
-            rubro: "",
-        });
-        setDetalles([]);
-        setSelectedFile(null);
-        setPreviewUrl(null);
         setError("");
         onClose();
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !formData) return null;
 
     return (
         <div className={shared.modalOverlay}>
             <div className={`${shared.modalContent} ${styles.modalContent}`} style={{ minWidth: 700, maxWidth: 900 }}>
-                <h2>Nuevo Producto</h2>
+                <h2>{isEditMode ? 'Editar Producto' : 'Nuevo Producto'}</h2>
                 
                 <div className={styles.nuevoProductoGrid}>
                     {/* Columna 1: Datos principales */}
@@ -199,15 +245,15 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
                             className={`${shared.input} ${styles.input}`}
                             type="text"
                             placeholder="Nombre del producto"
-                            value={nuevoProducto.denominacion}
-                            onChange={e => setNuevoProducto({ ...nuevoProducto, denominacion: e.target.value })}
+                            value={formData.denominacion}
+                            onChange={e => setFormData({ ...formData, denominacion: e.target.value })}
                             disabled={isLoading}
                         />
                         <textarea
                             className={`${shared.input} ${styles.textArea}`}
                             placeholder="Descripción del producto"
-                            value={nuevoProducto.descripcion}
-                            onChange={e => setNuevoProducto({ ...nuevoProducto, descripcion: e.target.value })}
+                            value={formData.descripcion}
+                            onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
                             disabled={isLoading}
                             rows={3}
                         />
@@ -215,14 +261,24 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
                             className={`${shared.input} ${styles.input}`}
                             type="number"
                             placeholder="Tiempo de preparación (min)"
-                            value={nuevoProducto.tiempoEstimadoProduccion}
-                            onChange={e => setNuevoProducto({ ...nuevoProducto, tiempoEstimadoProduccion: e.target.value })}
+                            value={formData.tiempoEstimadoProduccion}
+                            onChange={e => setFormData({ ...formData, tiempoEstimadoProduccion: e.target.value })}
                             disabled={isLoading}
                         />
+                        {isEditMode && (
+                            <input
+                                className={`${shared.input} ${styles.input}`}
+                                type="number"
+                                placeholder="Precio de venta ($)"
+                                value={formData.precioVenta}
+                                onChange={e => setFormData({ ...formData, precioVenta: e.target.value })}
+                                disabled={isLoading}
+                            />
+                        )}
                         <select
                             className={`${shared.input} ${styles.input}`}
-                            value={nuevoProducto.rubro}
-                            onChange={e => setNuevoProducto({ ...nuevoProducto, rubro: e.target.value })}
+                            value={formData.rubro}
+                            onChange={e => setFormData({ ...formData, rubro: e.target.value })}
                             disabled={isLoading}
                         >
                             <option value="">Seleccione un rubro</option>
@@ -231,6 +287,7 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
                             ))}
                         </select>
                     </div>
+                    
                     {/* Columna 2: Ingredientes */}
                     <div className={styles.nuevoProductoCol}>
                         <div className={styles.agregarIngredienteForm}>
@@ -293,9 +350,9 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
                             <div className={styles.costoInfo}>
                                 <p>Costo total de ingredientes: ${calcularPrecioCosto().toFixed(2)}</p>
                             </div>
-
                         </div>
                     </div>
+                    
                     {/* Columna 3: Imagen */}
                     <div className={styles.nuevoProductoCol} style={{ alignItems: "center", justifyContent: "center" }}>
                         <div className={styles.imageUploadContainer}>
@@ -326,7 +383,7 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isLoading}
                             >
-                                Seleccionar Imagen
+                                {isEditMode ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
                             </button>
                         </div>
                     </div>
@@ -340,7 +397,7 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
                         onClick={handleSubmit}
                         disabled={isLoading}
                     >
-                        {isLoading ? "Creando..." : "Confirmar"}
+                        {isLoading ? (isEditMode ? "Guardando..." : "Creando...") : "Confirmar"}
                     </button>
                     <button
                         className={shared.salirButton}
@@ -355,4 +412,4 @@ export const NuevoProductoModal: React.FC<NuevoProductoModalProps> = ({
     );
 };
 
-export default NuevoProductoModal;
+export default ProductoModal;

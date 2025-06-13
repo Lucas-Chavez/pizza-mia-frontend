@@ -39,24 +39,44 @@ export const useRubrosGeneric = (tipoRubro: "INSUMO" | "MANUFACTURADO") => {
         }
     };
 
+    /**
+     * Función unificada para crear y editar rubros
+     */
+    const handleRubroSubmit = async (
+        id: string | number | null, 
+        rubroData: {
+            denominacion: string;
+            tipoRubro: string;
+            rubroPadre?: { id: string | number } | null;
+        }
+    ) => {
+        try {
+            if (id === null) {
+                // Modo creación
+                await createRubro(rubroData);
+            } else {
+                // Modo edición
+                await updateRubro(id, rubroData);
+            }
+            await loadData();
+        } catch (error) {
+            console.error(`Error ${id === null ? 'creating' : 'updating'} rubro:`, error);
+            throw error;
+        }
+    };
+
+    // Mantener las funciones anteriores para compatibilidad
     const handleCreateRubro = async (rubroData: {
         denominacion: string;
         tipoRubro?: string;
         rubroPadre?: { id: string | number } | null;
     }) => {
-        try {
-            // Asegurarse de que el tipo de rubro es el correcto
-            const dataToSend = {
-                ...rubroData,
-                tipoRubro: tipoRubro
-            };
-            
-            await createRubro(dataToSend);
-            await loadData();
-        } catch (error) {
-            console.error("Error creating rubro:", error);
-            throw error;
-        }
+        const dataToSend = {
+            ...rubroData,
+            tipoRubro: rubroData.tipoRubro || tipoRubro
+        };
+        
+        return handleRubroSubmit(null, dataToSend);
     };
 
     const handleUpdateRubro = async (id: number | string, rubroData: {
@@ -64,13 +84,7 @@ export const useRubrosGeneric = (tipoRubro: "INSUMO" | "MANUFACTURADO") => {
         tipoRubro: string;
         rubroPadre?: { id: string | number } | null;
     }) => {
-        try {
-            await updateRubro(id, rubroData);
-            await loadData();
-        } catch (error) {
-            console.error("Error updating rubro:", error);
-            throw error;
-        }
+        return handleRubroSubmit(id, rubroData);
     };
 
     useEffect(() => {
@@ -83,6 +97,8 @@ export const useRubrosGeneric = (tipoRubro: "INSUMO" | "MANUFACTURADO") => {
         loading,
         toggleEstado,
         handleCreateRubro,
-        handleUpdateRubro
+        handleUpdateRubro,
+        handleRubroSubmit, // Nueva función unificada
+        loadData
     };
 };

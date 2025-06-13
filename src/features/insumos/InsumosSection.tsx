@@ -1,162 +1,87 @@
-import React, { useState, useEffect } from "react";
-import type { InsumoApi, RegistroInsumoApi, RubroApi } from "../../types/adminTypes";
-import { fetchInsumos, patchEstadoInsumo, createInsumo, updateInsumo, fetchRubros, createRegistroInsumo } from "../../api/adminApi";
+import React, { useState } from "react";
 import InsumosTable from "./ui/InsumosTable";
 import SearchHeader from "../../components/SearchHeader/SearchHeader";
-import NuevoInsumoModal from "./ui/NuevoInsumoModal";
-import EditarInsumoModal from "./ui/EditarInsumoModal";
+import InsumoModal from "./ui/InsumoModal";
 import ReponerStockModal from "./ui/ReponerStockModal";
 import Pagination from "../../components/Pagination/Pagination";
+import useInsumos from "./hooks/useInsumos";
+import type { InsumoApi } from "../../types/adminTypes";
 import styles from "./InsumosSection.module.css";
 import shared from "../../styles/common/Common.module.css";
 
 export const InsumosSection: React.FC = () => {
-    const [insumos, setInsumos] = useState<InsumoApi[]>([]);
-    const [rubros, setRubros] = useState<RubroApi[]>([]);
-    const [search, setSearch] = useState("");
-    
-    // Estados para paginación
-    const [currentPage, setCurrentPage] = useState(0);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalElements, setTotalElements] = useState(0);
-    const [pageSize] = useState(8);
+    const {
+        // Estados del hook
+        insumos,
+        rubros,
+        loading,
+        error,
+        currentPage,
+        totalPages,
+        search,
+        setSearch,
+        
+        // Métodos del hook
+        handleSubmit,
+        toggleEstadoInsumo,
+        reponerStock,
+        handlePageChange,
+        getPaginationInfo,
+        clearError
+    } = useInsumos();
     
     // Estados para modales
-    const [showNuevoModal, setShowNuevoModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
+    const [showInsumoModal, setShowInsumoModal] = useState(false);
     const [showReponerModal, setShowReponerModal] = useState(false);
     
     // Estados para datos de modales
     const [insumoToEdit, setInsumoToEdit] = useState<InsumoApi | null>(null);
     const [insumoToReponer, setInsumoToReponer] = useState<InsumoApi | null>(null);
-    
-    // Estado para búsqueda demorada
-    const [debouncedSearch, setDebouncedSearch] = useState(search);
-
-    // Efecto para demorar la búsqueda
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(search);
-            setCurrentPage(0); // Resetear a la primera página al buscar
-        }, 300);
-        
-        return () => clearTimeout(timer);
-    }, [search]);
-
-    useEffect(() => {
-        loadData();
-    }, [currentPage, debouncedSearch]);
-
-    // Cargar datos de rubros solo una vez al inicio
-    useEffect(() => {
-        const loadRubros = async () => {
-            try {
-                const rubrosData = await fetchRubros();
-                setRubros(rubrosData);
-            } catch (error) {
-                console.error("Error al cargar rubros:", error);
-                setRubros([]);
-            }
-        };
-        
-        loadRubros();
-    }, []);
-
-    const loadData = async () => {
-        try {
-            // Si hay búsqueda, filtrar en frontend (más sencillo que implementar búsqueda en backend)
-            if (debouncedSearch) {
-                const allInsumos = await fetchInsumos(0, 100); // Obtener más insumos para búsqueda
-                
-                const filtered = allInsumos.content.filter((item) =>
-                    item.denominacion.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                    (item.rubro?.denominacion?.toLowerCase() || "").includes(debouncedSearch.toLowerCase()) ||
-                    String(item.stockActual).toLowerCase().includes(debouncedSearch.toLowerCase())
-                );
-                
-                setInsumos(filtered);
-                setTotalPages(Math.ceil(filtered.length / pageSize));
-                setTotalElements(filtered.length);
-            } else {
-                // Si no hay búsqueda, usar paginación del backend
-                const result = await fetchInsumos(currentPage, pageSize);
-                setInsumos(result.content);
-                setTotalPages(result.totalPages);
-                setTotalElements(result.totalElements);
-            }
-        } catch (error) {
-            console.error("Error al cargar insumos:", error);
-            setInsumos([]);
-            setTotalPages(1);
-            setTotalElements(0);
-        }
-    };
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
 
     const handleToggleEstado = async (id: number) => {
-        try {
-            await patchEstadoInsumo(id);
-            await loadData(); // Recargar datos después del cambio
-        } catch (error) {
+        const success = await toggleEstadoInsumo(id);
+        if (!success) {
             alert("Error al cambiar el estado del insumo");
         }
     };
 
-    const handleNuevoInsumo = async (
-        insumoData: {
-            denominacion: string;
-            rubro: string;
-            subRubro: string;
-            unidadMedida: string;
-        },
-        imageFile?: File
-    ) => {
-        const body = {
-            denominacion: insumoData.denominacion,
-            unidadMedida: insumoData.unidadMedida,
-            rubro: { id: insumoData.subRubro || insumoData.rubro },
-            precioCompra: 0,
-            precioVenta: 0,
-            esParaElaborar: false,
-        };
-        await createInsumo(body, imageFile);
-        await loadData(); // Recargar datos después de crear
-    };
-
-    const handleEditarInsumo = async (id: number, insumoData: any, imageFile?: File) => {
-        await updateInsumo(id, insumoData, imageFile);
-        await loadData(); // Recargar datos después de editar
+    const handleInsumoSubmit = async (id: number | null, insumoData: any, imageFile?: File) => {
+        try {
+            const success = await handleSubmit(id, insumoData, imageFile);
+            if (success) {
+                setShowInsumoModal(false);
+                setInsumoToEdit(null);
+                clearError();
+            } else {
+                throw new Error(`Error al ${id === null ? 'crear' : 'editar'} insumo`);
+            }
+        } catch (error) {
+            console.error(`Error al ${id === null ? 'crear' : 'editar'} insumo:`, error);
+            throw error; // Re-lanzar el error para que el modal lo maneje
+        }
     };
 
     const handleReponerStock = async (insumo: InsumoApi, cantidad: number, motivo: string) => {
-        try {
-            // Creamos el objeto RegistroInsumo
-            const registroData: RegistroInsumoApi = {
-                cantidad: cantidad,
-                tipoMovimiento: "INGRESO", // Asumiendo que reponer es un ingreso
-                motivo: motivo,
-                articuloInsumo: { id: insumo.id },
-                sucursal: { id: 1 }, // Deberías obtener la sucursal activa del usuario o del sistema
-            };
-            
-            // Llamamos a la API para registrar el movimiento
-            await createRegistroInsumo(registroData);
-            
-            // Refrescamos los insumos para obtener el stock actualizado
-            await loadData();
-            
-        } catch (error) {
-            console.error("Error al reponer stock:", error);
+        const success = await reponerStock(insumo, cantidad, motivo);
+        if (success) {
+            setShowReponerModal(false);
+            setInsumoToReponer(null);
+            clearError();
+        } else {
             alert("Error al actualizar el stock");
         }
     };
 
+    // Abrir modal para crear nuevo insumo
+    const handleNuevoClick = () => {
+        setInsumoToEdit(null);
+        setShowInsumoModal(true);
+    };
+
+    // Abrir modal para editar insumo
     const handleEditClick = (insumo: InsumoApi) => {
         setInsumoToEdit(insumo);
-        setShowEditModal(true);
+        setShowInsumoModal(true);
     };
 
     const handleReponerClick = (insumo: InsumoApi) => {
@@ -164,31 +89,45 @@ export const InsumosSection: React.FC = () => {
         setShowReponerModal(true);
     };
 
-    const handleCloseEditModal = () => {
-        setShowEditModal(false);
+    const handleCloseInsumoModal = () => {
+        setShowInsumoModal(false);
         setInsumoToEdit(null);
+        clearError();
     };
 
     const handleCloseReponerModal = () => {
         setShowReponerModal(false);
         setInsumoToReponer(null);
+        clearError();
     };
 
-    // Mostrar información sobre paginación
-    const paginationInfo = debouncedSearch
-        ? `Mostrando ${insumos.length} resultados de búsqueda`
-        : `Mostrando ${insumos.length} de ${totalElements} insumos`;
+    if (loading && insumos.length === 0) {
+        return (
+            <div className={`${shared.adminContent} ${styles.adminContent}`}>
+                <div className={shared.adminContentSection}>
+                    <div>Cargando insumos...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`${shared.adminContent} ${styles.adminContent}`}>
             <div className={shared.adminContentSection}>
                 <SearchHeader
-                    onNewClick={() => setShowNuevoModal(true)}
+                    onNewClick={handleNuevoClick}
                     title="Administrador de insumos"
                     search={search}
                     onSearchChange={setSearch}
                     placeholder="Buscar insumos..."
                 />
+
+                {error && (
+                    <div className={shared.error} style={{ marginBottom: '20px' }}>
+                        {error}
+                        <button onClick={clearError} style={{ marginLeft: '10px' }}>✕</button>
+                    </div>
+                )}
 
                 <InsumosTable
                     insumos={insumos}
@@ -197,8 +136,8 @@ export const InsumosSection: React.FC = () => {
                     onReponerStock={handleReponerClick}
                 />
                 
-                <div className={styles.paginationContainer}>
-                    <div className={styles.paginationInfo}>{paginationInfo}</div>
+                <div className={shared.paginationContainer}>
+                    <div className={shared.paginationInfo}>{getPaginationInfo()}</div>
                     <Pagination 
                         currentPage={currentPage}
                         totalPages={totalPages}
@@ -206,19 +145,11 @@ export const InsumosSection: React.FC = () => {
                     />
                 </div>
 
-                {/* Modal Nuevo Insumo */}
-                <NuevoInsumoModal
-                    isOpen={showNuevoModal}
-                    onClose={() => setShowNuevoModal(false)}
-                    onSubmit={handleNuevoInsumo}
-                    rubros={rubros}
-                />
-
-                {/* Modal Editar Insumo */}
-                <EditarInsumoModal
-                    isOpen={showEditModal}
-                    onClose={handleCloseEditModal}
-                    onSubmit={handleEditarInsumo}
+                {/* Modal unificado para Crear/Editar Insumo */}
+                <InsumoModal
+                    isOpen={showInsumoModal}
+                    onClose={handleCloseInsumoModal}
+                    onSubmit={handleInsumoSubmit}
                     insumo={insumoToEdit}
                     rubros={rubros}
                 />

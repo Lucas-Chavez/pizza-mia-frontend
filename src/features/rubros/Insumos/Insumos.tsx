@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import Button from "../../../components/Button/Button";
-import { useRubrosGeneric } from "../hooks/useRubrosGeneric";
+import { useRubrosGeneric } from "../hooks/useRubros";
 import shared from "../../../styles/common/Common.module.css";
 import { RubroApi } from "../../../types/adminTypes";
 import styles from "./Insumos.module.css";
 
-// Importar componentes genéricos
+// Importar componentes
 import GenericRubroTable from "../ui/GenericRubroTable";
-import GenericRubroModal from "../ui/GenericRubroModal";
-import GenericEditRubroModal from "../ui/GenericEditRubroModal";
+import RubroModal from "../ui/RubroModal"; // Nuevo modal unificado
 
 const Insumos: React.FC = () => {
     const {
@@ -16,25 +15,27 @@ const Insumos: React.FC = () => {
         rubrosApi,
         loading,
         toggleEstado,
-        handleCreateRubro,
-        handleUpdateRubro
+        handleRubroSubmit
     } = useRubrosGeneric("INSUMO");
 
     const [showModal, setShowModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
     const [currentPadre, setCurrentPadre] = useState("");
     const [rubroToEdit, setRubroToEdit] = useState<RubroApi | null>(null);
 
+    // Función para crear nuevo rubro (padre o subrubro)
     const handleNuevoRubro = (padre: string) => {
         setCurrentPadre(padre);
+        setRubroToEdit(null); // Modo creación
         setShowModal(true);
     };
 
+    // Función para editar rubro existente
     const handleEditRubro = (rowIndex: number) => {
         const rubro = rubrosApi.find(r => r.id === rubros[rowIndex].id);
         if (rubro) {
-            setRubroToEdit(rubro);
-            setShowEditModal(true);
+            setRubroToEdit(rubro); // Modo edición
+            setCurrentPadre(""); // No necesario en edición
+            setShowModal(true);
         }
     };
 
@@ -60,35 +61,20 @@ const Insumos: React.FC = () => {
                     tipoRubro="INSUMO"
                 />
 
-                <GenericRubroModal
-                    show={showModal}
-                    onClose={() => setShowModal(false)}
-                    onSubmit={async ({ denominacion }) => {
-                        await handleCreateRubro({
-                            denominacion,
-                            rubroPadre: currentPadre 
-                                ? { id: rubros.find(r => r.rubro === currentPadre)?.id || "" }
-                                : undefined
-                        });
+                {/* Modal Unificado para Crear/Editar Rubro */}
+                <RubroModal
+                    isOpen={showModal}
+                    onClose={() => {
                         setShowModal(false);
+                        setRubroToEdit(null);
+                        setCurrentPadre("");
                     }}
-                    padre={currentPadre}
-                    modalStyles={styles}
-                />
-
-                <GenericEditRubroModal
-                    show={showEditModal}
-                    onClose={() => setShowEditModal(false)}
-                    onSubmit={async (rubroData) => {
-                        if (rubroToEdit) {
-                            await handleUpdateRubro(rubroToEdit.id, rubroData);
-                            setShowEditModal(false);
-                        }
-                    }}
+                    onSubmit={handleRubroSubmit}
                     rubro={rubroToEdit}
                     rubrosApi={rubrosApi}
                     tipoRubroDefault="INSUMO"
                     modalStyles={styles}
+                    padre={currentPadre}
                 />
             </div>
         </div>

@@ -297,20 +297,23 @@ VerRecetaModal.tsx
 /* Contenedor principal del modal de receta */
 .recetaModalContent {
     padding: 0 0 20px 0;
-    max-width: 700px; /* Aumentar el ancho máximo de 550px a 700px */
-    width: 100%;
-    border-radius: 16px; /* Aumentar el radio de borde para un aspecto más moderno */
+    max-width: 550px; /* Reducir el ancho máximo de 700px a 550px */
+    width: auto; /* Hacer responsive */
+    border-radius: 12px; /* Reducir el radio de borde de 16px a 12px */
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); /* Sombra más sutil */
+    max-height: 85vh; /* Limitar altura máxima */
+    overflow-y: auto; /* Permitir scroll si es necesario */
+    margin-bottom: 40px;
 }
 
 /* Encabezado de la receta */
 .recetaHeader {
     position: relative;
     width: 100%;
-    height: 250px; /* Aumentar la altura de 180px a 250px */
+    height: 180px; /* Reducir la altura de 250px a 180px */
     overflow: hidden;
-    margin-bottom: 30px; /* Aumentar el margen inferior */
+    margin-bottom: 20px; /* Reducir el margen inferior de 30px a 20px */
 }
 
 /* Fondo de imagen de la receta */
@@ -322,12 +325,12 @@ VerRecetaModal.tsx
     height: 100%;
     background-size: cover;
     background-position: center;
-    filter: brightness(0.7); /* Ajustar brillo para mejor contraste */
-    transition: transform 0.3s ease; /* Efecto sutil al cargar */
+    filter: brightness(0.8); /* Ajustar brillo para mejor contraste */
+    transition: transform 0.3s ease;
 }
 
 .recetaImageBackground:hover {
-    transform: scale(1.05); /* Efecto de zoom suave al pasar el mouse */
+    transform: scale(1.02); /* Efecto de zoom más sutil */
 }
 
 /* Contenido del encabezado */
@@ -336,70 +339,70 @@ VerRecetaModal.tsx
     bottom: 0;
     left: 0;
     width: 100%;
-    padding: 30px; /* Aumentar el padding */
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent 90%);
+    padding: 20px; /* Reducir el padding de 30px a 20px */
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 80%);
     color: white;
 }
 
 /* Título de la receta */
 .recetaHeaderContent h2 {
-    margin: 0 0 12px 0; /* Aumentar el margen inferior */
-    font-size: 32px; /* Aumentar el tamaño de fuente */
-    font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.4); /* Sombra más pronunciada */
+    margin: 0 0 8px 0; /* Reducir el margen inferior de 12px a 8px */
+    font-size: 24px; /* Reducir el tamaño de fuente de 32px a 24px */
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
     color: white;
-    letter-spacing: 0.5px; /* Espaciado entre letras */
+    letter-spacing: 0.3px; /* Reducir espaciado entre letras */
 }
 
 /* Tiempo de preparación */
 .recetaTiempo {
     display: flex;
     align-items: center;
-    gap: 8px; /* Aumentar el espacio */
-    font-size: 18px; /* Aumentar el tamaño de fuente */
+    gap: 6px; /* Reducir el espacio de 8px a 6px */
+    font-size: 16px; /* Reducir el tamaño de fuente de 18px a 16px */
     opacity: 0.95;
 }
 
 /* Sección de ingredientes */
 .recetaIngredientes {
-    padding: 0 40px 20px 40px; /* Aumentar el padding */
+    padding: 0 24px 16px 24px; /* Reducir el padding de 40px a 24px */
 }
 
 /* Título de ingredientes */
 .recetaIngredientes h3 {
-    margin: 0 0 20px 0; /* Aumentar el margen inferior */
-    font-size: 24px; /* Aumentar el tamaño de fuente */
+    margin: 0 0 16px 0; /* Reducir el margen inferior de 20px a 16px */
+    font-size: 20px; /* Reducir el tamaño de fuente de 24px a 20px */
     font-weight: 600;
     color: #333;
     border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 12px;
+    padding-bottom: 8px; /* Reducir padding inferior */
 }
 
 /* Lista de ingredientes */
 .ingredientesList {
     list-style: none;
     padding: 0;
-    margin: 0 0 30px 0;
-    max-height: 300px; /* Limitar altura máxima */
-    overflow-y: auto; /* Permitir scroll si hay muchos ingredientes */
+    margin: 0 0 20px 0; /* Reducir margen de 30px a 20px */
+    max-height: 200px; /* Reducir altura máxima de 300px a 200px */
+    overflow-y: auto;
     border-radius: 8px;
     background: #fafbfc;
     border: 1px solid #eee;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* Items de ingredientes en receta */
 .ingredienteRecetaItem {
     display: flex;
     justify-content: space-between;
-    padding: 14px 20px; /* Aumentar el padding */
+    padding: 10px 16px; /* Reducir el padding de 14px 20px a 10px 16px */
     border-bottom: 1px solid #f0f0f0;
     align-items: center;
     transition: background-color 0.2s;
 }
 
 .ingredienteRecetaItem:hover {
-    background-color: #f5f5f5; /* Efecto hover */
+    background-color: #f5f5f5;
 }
 
 .ingredienteRecetaItem:last-child {
@@ -408,52 +411,52 @@ VerRecetaModal.tsx
 
 /* Nombre del ingrediente */
 .ingredienteNombre {
-    font-size: 18px; /* Aumentar el tamaño de fuente */
+    font-size: 16px; /* Reducir el tamaño de fuente de 18px a 16px */
     font-weight: 500;
     color: #333;
 }
 
 /* Cantidad del ingrediente */
 .ingredienteCantidad {
-    font-size: 16px; /* Aumentar el tamaño de fuente */
+    font-size: 14px; /* Reducir el tamaño de fuente de 16px a 14px */
     color: #666;
     background: #f0f0f0;
-    padding: 5px 14px;
-    border-radius: 20px;
-    min-width: 60px;
+    padding: 4px 12px; /* Reducir padding de 5px 14px a 4px 12px */
+    border-radius: 16px; /* Reducir border-radius de 20px a 16px */
+    min-width: 50px; /* Reducir min-width de 60px a 50px */
     text-align: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 /* Estilos para la descripción */
 .recetaDescripcion {
-    margin-top: 20px;
+    margin-top: 16px; /* Reducir margen de 20px a 16px */
 }
 
 .recetaDescripcion h3 {
-    margin: 0 0 15px 0;
-    font-size: 24px;
+    margin: 0 0 12px 0; /* Reducir margen de 15px a 12px */
+    font-size: 20px; /* Reducir tamaño de fuente de 24px a 20px */
     font-weight: 600;
     color: #333;
     border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 12px;
+    padding-bottom: 8px; /* Reducir padding de 12px a 8px */
 }
 
 .recetaDescripcion p {
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 14px; /* Reducir tamaño de fuente de 16px a 14px */
+    line-height: 1.5; /* Reducir line-height de 1.6 a 1.5 */
     color: #444;
     background: #fafbfc;
-    padding: 15px 20px;
-    border-radius: 8px;
+    padding: 12px 16px; /* Reducir padding de 15px 20px a 12px 16px */
+    border-radius: 6px; /* Reducir border-radius de 8px a 6px */
     border: 1px solid #eee;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Botones de acción al final del modal */
 .recetaActions {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
-    padding: 0 40px;
-}
+    margin-top: 16px; /* Reducir margen de 20px a 16px */
+    padding: 0 24px; /* Reducir padding de 40px a 24px */
+} 

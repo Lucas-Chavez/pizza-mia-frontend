@@ -1,149 +1,87 @@
-import React, { useState, useEffect } from "react";
-import type { ArticuloManufacturadoApi, RubroApi, InsumoApi } from "../../types/adminTypes";
-import { 
-    fetchArticulosManufacturados, 
-    patchEstadoArticuloManufacturado, 
-    createArticuloManufacturado, 
-    updateArticuloManufacturado, 
-    fetchRubros, 
-    fetchInsumos
-} from "../../api/adminApi";
+import React, { useState } from "react";
 import ProductosTable from "./ui/ProductosTable";
 import SearchHeader from "../../components/SearchHeader/SearchHeader";
-import NuevoProductoModal from "./ui/NuevoProductoModal";
-import EditarProductoModal from "./ui/EditarProductoModal";
+import ProductoModal from "./ui/ProductoModal";
 import VerRecetaModal from "./ui/VerRecetaModal";
 import Pagination from "../../components/Pagination/Pagination";
+import useProductos from "./hooks/useProductos";
+import type { ArticuloManufacturadoApi } from "../../types/adminTypes";
 import styles from "./ProductosSection.module.css";
 import shared from "../../styles/common/Common.module.css";
 
 export const ProductosSection: React.FC = () => {
-    const [productos, setProductos] = useState<ArticuloManufacturadoApi[]>([]);
-    const [rubros, setRubros] = useState<RubroApi[]>([]);
-    const [insumos, setInsumos] = useState<InsumoApi[]>([]);
-    const [search, setSearch] = useState("");
-    
-    // Estados para paginación
-    const [currentPage, setCurrentPage] = useState(0);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalElements, setTotalElements] = useState(0);
-    const [pageSize] = useState(8);
+    const {
+        // Estados del hook
+        productos,
+        loading,
+        error,
+        currentPage,
+        totalPages,
+        search,
+        setSearch,
+        
+        // Métodos del hook
+        handleSubmit,
+        toggleEstadoProducto,
+        handlePageChange,
+        getRubrosPrincipales,
+        getInsumosParaElaborar,
+        getPaginationInfo,
+        clearError
+    } = useProductos();
     
     // Estados para modales
-    const [showNuevoModal, setShowNuevoModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
+    const [showProductoModal, setShowProductoModal] = useState(false);
     const [showRecetaModal, setShowRecetaModal] = useState(false);
     
     // Estados para datos de modales
     const [productoToEdit, setProductoToEdit] = useState<ArticuloManufacturadoApi | null>(null);
     const [productoToViewRecipe, setProductoToViewRecipe] = useState<ArticuloManufacturadoApi | null>(null);
-    
-    // Estado para búsqueda demorada
-    const [debouncedSearch, setDebouncedSearch] = useState(search);
-
-    // Efecto para demorar la búsqueda
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(search);
-            setCurrentPage(0); // Resetear a la primera página al buscar
-        }, 300);
-        
-        return () => clearTimeout(timer);
-    }, [search]);
-
-    useEffect(() => {
-        loadData();
-    }, [currentPage, debouncedSearch]);
-
-    // Cargar datos de rubros e insumos solo una vez al inicio
-    useEffect(() => {
-        const loadInitialData = async () => {
-            try {
-                // Cargar rubros
-                const rubrosData = await fetchRubros();
-                setRubros(rubrosData);
-                
-                // Cargar insumos (todos los insumos activos para usar en los modales)
-                const insumosResult = await fetchInsumos(0, 1000); // Obtenemos un número grande para tener todos
-                const insumosActivos = insumosResult.content.filter(i => i.fechaBaja === null);
-                setInsumos(insumosActivos);
-            } catch (error) {
-                console.error("Error al cargar datos iniciales:", error);
-                setRubros([]);
-                setInsumos([]);
-            }
-        };
-        
-        loadInitialData();
-    }, []);
-
-    const loadData = async () => {
-        try {
-            // Si hay búsqueda, filtrar en frontend
-            if (debouncedSearch) {
-                const allProductos = await fetchArticulosManufacturados(0, 100); // Obtener más productos para búsqueda
-                
-                const filtered = allProductos.content.filter((item) =>
-                    item.denominacion.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                    (item.rubro?.denominacion?.toLowerCase() || "").includes(debouncedSearch.toLowerCase()) ||
-                    item.descripcion.toLowerCase().includes(debouncedSearch.toLowerCase())
-                );
-                
-                setProductos(filtered);
-                setTotalPages(Math.ceil(filtered.length / pageSize));
-                setTotalElements(filtered.length);
-            } else {
-                // Si no hay búsqueda, usar paginación del backend
-                const result = await fetchArticulosManufacturados(currentPage, pageSize);
-                setProductos(result.content);
-                setTotalPages(result.totalPages);
-                setTotalElements(result.totalElements);
-            }
-        } catch (error) {
-            console.error("Error al cargar productos:", error);
-            setProductos([]);
-            setTotalPages(1);
-            setTotalElements(0);
-        }
-    };
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
 
     const handleToggleEstado = async (id: number) => {
-        try {
-            await patchEstadoArticuloManufacturado(id);
-            await loadData(); // Recargar datos después del cambio
-        } catch (error) {
+        const success = await toggleEstadoProducto(id);
+        if (!success) {
             alert("Error al cambiar el estado del producto");
         }
     };
 
-    const handleNuevoProducto = async (productoData: any, imageFile?: File) => {
-        await createArticuloManufacturado(productoData, imageFile);
-        await loadData(); // Recargar datos después de crear
+    const handleProductoSubmit = async (id: number | null, productoData: any, imageFile?: File) => {
+        try {
+            const success = await handleSubmit(id, productoData, imageFile);
+            if (success) {
+                setShowProductoModal(false);
+                setProductoToEdit(null);
+                clearError();
+            } else {
+                throw new Error(`Error al ${id === null ? 'crear' : 'editar'} producto`);
+            }
+        } catch (error) {
+            console.error(`Error al ${id === null ? 'crear' : 'editar'} producto:`, error);
+            throw error; // Re-lanzar el error para que el modal lo maneje
+        }
     };
 
-    const handleEditarProducto = async (id: number, productoData: any, imageFile?: File) => {
-        await updateArticuloManufacturado(id, productoData, imageFile);
-        await loadData(); // Recargar datos después de editar
+    // Abrir modal para crear nuevo producto
+    const handleNuevoClick = () => {
+        setProductoToEdit(null);
+        setShowProductoModal(true);
     };
 
+    // Abrir modal para editar producto
     const handleEditClick = (producto: ArticuloManufacturadoApi) => {
         setProductoToEdit(producto);
-        setShowEditModal(true);
+        setShowProductoModal(true);
     };
 
     const handleVerRecetaClick = (producto: ArticuloManufacturadoApi) => {
-        // Simplemente usar el producto que ya tenemos, sin hacer una petición adicional
         setProductoToViewRecipe(producto);
         setShowRecetaModal(true);
     };
 
-    const handleCloseEditModal = () => {
-        setShowEditModal(false);
+    const handleCloseProductoModal = () => {
+        setShowProductoModal(false);
         setProductoToEdit(null);
+        clearError();
     };
 
     const handleCloseRecetaModal = () => {
@@ -151,21 +89,33 @@ export const ProductosSection: React.FC = () => {
         setProductoToViewRecipe(null);
     };
 
-    // Mostrar información sobre paginación
-    const paginationInfo = debouncedSearch
-        ? `Mostrando ${productos.length} resultados de búsqueda`
-        : `Mostrando ${productos.length} de ${totalElements} productos`;
+    if (loading && productos.length === 0) {
+        return (
+            <div className={`${shared.adminContent} ${styles.adminContent}`}>
+                <div className={shared.adminContentSection}>
+                    <div>Cargando productos...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`${shared.adminContent} ${styles.adminContent}`}>
             <div className={shared.adminContentSection}>
                 <SearchHeader
-                    onNewClick={() => setShowNuevoModal(true)}
+                    onNewClick={handleNuevoClick}
                     title="Administrador de productos"
                     search={search}
                     onSearchChange={setSearch}
                     placeholder="Buscar productos..."
                 />
+
+                {error && (
+                    <div className={shared.error} style={{ marginBottom: '20px' }}>
+                        {error}
+                        <button onClick={clearError} style={{ marginLeft: '10px' }}>✕</button>
+                    </div>
+                )}
 
                 <ProductosTable
                     productos={productos}
@@ -174,8 +124,8 @@ export const ProductosSection: React.FC = () => {
                     onVerReceta={handleVerRecetaClick}
                 />
                 
-                <div className={styles.paginationContainer}>
-                    <div className={styles.paginationInfo}>{paginationInfo}</div>
+                <div className={shared.paginationContainer}>
+                    <div className={shared.paginationInfo}>{getPaginationInfo()}</div>
                     <Pagination 
                         currentPage={currentPage}
                         totalPages={totalPages}
@@ -183,23 +133,14 @@ export const ProductosSection: React.FC = () => {
                     />
                 </div>
 
-                {/* Modal Nuevo Producto */}
-                <NuevoProductoModal
-                    isOpen={showNuevoModal}
-                    onClose={() => setShowNuevoModal(false)}
-                    onSubmit={handleNuevoProducto}
-                    rubros={rubros}
-                    insumos={insumos}
-                />
-
-                {/* Modal Editar Producto */}
-                <EditarProductoModal
-                    isOpen={showEditModal}
-                    onClose={handleCloseEditModal}
-                    onSubmit={handleEditarProducto}
+                {/* Modal unificado para Crear/Editar Producto */}
+                <ProductoModal
+                    isOpen={showProductoModal}
+                    onClose={handleCloseProductoModal}
+                    onSubmit={handleProductoSubmit}
                     producto={productoToEdit}
-                    rubros={rubros}
-                    insumos={insumos}
+                    rubros={getRubrosPrincipales()}
+                    insumos={getInsumosParaElaborar()}
                 />
 
                 {/* Modal Ver Receta */}
