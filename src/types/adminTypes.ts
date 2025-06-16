@@ -150,7 +150,8 @@ export type ClienteApi = {
     apellido: string;
     usuario: string;
     email?: string;
-    telefono?: string;
+    rol: RolApi; // Rol del cliente, puede ser "Cliente" o "Administrador"
+    telefono?: number;
     domicilio?: DomicilioApi;
     fechaAlta: string;
     fechaBaja: string | null;
@@ -166,7 +167,7 @@ export type RolApi = {
     denominacion: string;
     fechaAlta: string;
     fechaBaja: string | null;
-    estado?: string; // "Activo" | "Inactivo"
+    estado?: string; // Campo calculado en el frontend: "Activo" | "Inactivo"
 };
 
 /**

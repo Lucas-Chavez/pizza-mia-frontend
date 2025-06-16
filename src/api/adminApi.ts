@@ -4,7 +4,9 @@ import {
     RubroApi, 
     RubroTable, 
     ArticuloManufacturadoApi,
-    ArticuloManufacturadoDetalleApi
+    ArticuloManufacturadoDetalleApi,
+    RolApi,
+    ClienteApi
 } from "../types/adminTypes";
 
 // ================================================================
@@ -347,6 +349,230 @@ export const updateArticuloManufacturado = async (id: number, articuloData: any,
 };
 
 // ================================================================
+// ENDPOINTS PARA ROLES
+// ================================================================
+
+/**
+ * Obtiene todos los roles
+ * @returns Lista de roles
+ */
+export const fetchRoles = async (): Promise<RolApi[]> => {
+    const res = await fetch("/api/roles");
+    if (!res.ok) throw new Error('Error al obtener roles');
+    const data = await res.json();
+    
+    // Mapear para añadir el estado calculado
+    return data.map((rol: any) => ({
+        ...rol,
+        estado: rol.fechaBaja === null ? "Activo" : "Inactivo"
+    }));
+};
+
+/**
+ * Obtiene un rol por su ID
+ * @param id - ID del rol
+ * @returns Datos del rol
+ */
+export const fetchRolById = async (id: number): Promise<RolApi> => {
+    const res = await fetch(`/api/roles/${id}`);
+    if (!res.ok) throw new Error('Error al obtener el rol');
+    const data = await res.json();
+    
+    return {
+        ...data,
+        estado: data.fechaBaja === null ? "Activo" : "Inactivo"
+    };
+};
+
+/**
+ * Crea un nuevo rol
+ * @param rolData - Datos del rol a crear
+ * @returns Datos del rol creado
+ */
+export const createRol = async (rolData: {
+    denominacion: string;
+}): Promise<RolApi> => {
+    const res = await fetch("/api/roles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rolData),
+    });
+    
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Error al crear el rol: ${errorText}`);
+    }
+    
+    const data = await res.json();
+    return {
+        ...data,
+        estado: "Activo" // Un rol recién creado siempre está activo
+    };
+};
+
+/**
+ * Actualiza un rol existente
+ * @param id - ID del rol a actualizar
+ * @param rolData - Nuevos datos del rol
+ * @returns Datos del rol actualizado
+ */
+export const updateRol = async (id: number, rolData: {
+    denominacion: string;
+}): Promise<RolApi> => {
+    const res = await fetch(`/api/roles/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rolData),
+    });
+    
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Error al actualizar el rol: ${errorText}`);
+    }
+    
+    const data = await res.json();
+    return {
+        ...data,
+        estado: data.fechaBaja === null ? "Activo" : "Inactivo"
+    };
+};
+
+/**
+ * Cambia el estado de un rol (activo/inactivo)
+ * @param id - ID del rol
+ */
+export const patchEstadoRol = async (id: number) => {
+    const res = await fetch(`/api/roles/${id}/estado`, { method: "PATCH" });
+    if (!res.ok) throw new Error('Error al cambiar estado del rol');
+};
+
+// ================================================================
+// ENDPOINTS PARA CLIENTES
+// ================================================================
+
+/**
+ * Obtiene una lista paginada de clientes
+ * @param page - Número de página (default: 0)
+ * @param size - Tamaño de página (default: 8)
+ * @param sort - Campo de ordenamiento (default: "id")
+ * @returns Objeto con contenido paginado e información de paginación
+ */
+export const fetchClientes = async (
+    page: number = 0,
+    size: number = 8,
+    sort: string = "id"
+): Promise<{
+    content: ClienteApi[];
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    number: number;
+}> => {
+    const res = await fetch(`/api/clientes?page=${page}&size=${size}&sort=${sort}`);
+    if (!res.ok) throw new Error('Error al obtener clientes');
+    const data = await res.json();
+    
+    // Mapear el contenido para añadir la propiedad estado
+    return {
+        ...data,
+        content: data.content.map((cliente: any) => ({
+            ...cliente,
+            estado: cliente.fechaBaja === null ? "Activo" : "Inactivo"
+        }))
+    };
+};
+
+/**
+ * Obtiene un cliente por su ID
+ * @param id - ID del cliente
+ * @returns Datos del cliente
+ */
+export const fetchClienteById = async (id: number): Promise<ClienteApi> => {
+    const res = await fetch(`/api/clientes/${id}`);
+    if (!res.ok) throw new Error('Error al obtener el cliente');
+    const data = await res.json();
+    
+    return {
+        ...data,
+        estado: data.fechaBaja === null ? "Activo" : "Inactivo"
+    };
+};
+
+/**
+ * Crea un nuevo cliente
+ * @param clienteData - Datos del cliente a crear
+ * @returns Datos del cliente creado
+ */
+export const createCliente = async (clienteData: {
+    nombre: string;
+    apellido: string;
+    telefono?: number;
+    email: string;
+    rol: any;
+}): Promise<ClienteApi> => {
+    const res = await fetch("/api/clientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(clienteData),
+    });
+    
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al crear el cliente');
+    }
+    
+    const data = await res.json();
+    return {
+        ...data,
+        estado: "Activo" // Un cliente recién creado siempre está activo
+    };
+};
+
+/**
+ * Actualiza un cliente existente
+ * @param id - ID del cliente a actualizar
+ * @param clienteData - Nuevos datos del cliente
+ * @returns Datos del cliente actualizado
+ */
+export const updateCliente = async (id: number, clienteData: {
+    nombre: string;
+    apellido: string;
+    telefono?: number;
+    email: string;
+    rol: any;
+}): Promise<ClienteApi> => {
+    const res = await fetch(`/api/clientes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(clienteData),
+    });
+    
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al actualizar el cliente');
+    }
+    
+    const data = await res.json();
+    return {
+        ...data,
+        estado: data.fechaBaja === null ? "Activo" : "Inactivo"
+    };
+};
+
+/**
+ * Cambia el estado de un cliente (activo/inactivo)
+ * @param id - ID del cliente
+ */
+export const patchEstadoCliente = async (id: number) => {
+    const res = await fetch(`/api/clientes/${id}/estado`, { method: "PATCH" });
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al cambiar estado del cliente');
+    }
+    return res.json();
+};
+
+// ================================================================
 // ÍNDICE DE FUNCIONES POR SECCIÓN
 // ================================================================
 
@@ -373,4 +599,18 @@ ARTÍCULOS MANUFACTURADOS:
 - patchEstadoArticuloManufacturado() - PATCH /api/manufacturados/{id}/estado
 - createArticuloManufacturado()      - POST /api/manufacturados
 - updateArticuloManufacturado()      - PUT /api/manufacturados/{id}
+
+ROLES:
+- fetchRoles()               - GET /api/roles
+- fetchRolById()             - GET /api/roles/{id}
+- createRol()                - POST /api/roles
+- updateRol()                - PUT /api/roles/{id}
+- patchEstadoRol()           - PATCH /api/roles/{id}/estado
+
+CLIENTES:
+- fetchClientes()             - GET /api/clientes (paginado)
+- fetchClienteById()         - GET /api/clientes/{id}
+- createCliente()            - POST /api/clientes
+- updateCliente()            - PUT /api/clientes/{id}
+- patchEstadoCliente()       - PATCH /api/clientes/{id}/estado
 */
