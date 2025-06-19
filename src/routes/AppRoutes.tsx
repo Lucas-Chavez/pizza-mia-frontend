@@ -105,6 +105,9 @@ const AppRoutes = () => {
                     {/* Otras rutas del admin */}
                     <Route path="/admin/insumos" element={<Dashboard />} />
                     <Route path="/admin/productos" element={<Dashboard />} />
+                    <Route path="/admin/promociones" element={<Dashboard />} />
+                    
+                    {/* Rutas de gestión, estadísticas y seguridad */}
                     <Route path="/admin/gestion" element={<Dashboard />} />
                     <Route path="/admin/estadisticas" element={<Dashboard />} />
                     <Route path="/admin/seguridad" element={<Dashboard />} />

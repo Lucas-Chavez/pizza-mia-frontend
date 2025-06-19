@@ -1,0 +1,223 @@
+/* =========================
+Estilos para la sección de promociones
+========================= */
+
+/* Contenedor principal del área de administración */
+.adminContent {
+    width: 100%;
+    padding: 30px 0;
+}
+
+/* Estilos base para inputs */
+.input {
+    border-radius: 38px;
+    border: 1px solid #d0d0d0;
+    margin-bottom: 12px;
+    min-width: 260px;
+    width: 95%;
+    max-width: 420px;
+    font-size: 16px;
+    padding: 10px 16px;
+    box-sizing: border-box;
+}
+
+.buttonConteiner {
+    width: 60rem;
+    display: flex;
+    justify-content: flex-start;
+    margin: 20px 20px;
+    padding-left: 0; /* Asegura que no haya padding */
+}
+
+/* =========================
+PromocionModal.tsx
+========================= */
+
+/* Modal minimalista y responsivo para crear/editar promoción */
+.modalContent {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 18px 18px 20px 18px;
+    min-width: 300px;
+    width: auto;
+    margin: 32px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow: hidden;
+}
+
+/* Layout de columnas individuales */
+.editarModalCol {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Contenedor para los detalles de productos/insumos, con scroll vertical si hay muchos items */
+.detallesContainer {
+    max-height: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Fila individual de detalle de producto/insumo, con scroll horizontal si es necesario */
+.detalleRow {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 8px;
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+/* Inputs y selects en detalleRow: que no crezcan demasiado */
+.detalleRow select,
+.detalleRow input[type="number"] {
+    min-width: auto;
+    max-width: 260px;
+    width: 100%;
+    font-size: 15px;
+}
+
+.detalleRow button {
+    min-width: 32px;
+    max-width: 40px;
+}
+
+/* Mensaje cuando no hay productos */
+.noDetalles {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Labels */
+.editarModalCol label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+/* Ajustes específicos para inputs en el modal de promociones */
+.editarModalCol .input {
+    margin-bottom: 8px;
+}
+
+/* Estilo para select de productos */
+.detalleRow select {
+    border-radius: 6px !important;
+    margin-bottom: 0 !important;
+}
+
+/* Estilo para input de cantidad */
+.detalleRow input[type="number"] {
+    border-radius: 6px !important;
+    margin-bottom: 0 !important;
+    text-align: center;
+}
+
+/* =========================
+VerItemModal.tsx
+========================= */
+
+/* Modal minimalista para VerItemModal */
+.verItemModalContent {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 24px 28px 18px 28px;
+    min-width: 320px;
+    max-width: 420px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Contenido scrollable del modal de ver items */
+.verItemScrollable {
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    padding-right: 4px;
+}
+
+/* Título del modal de items */
+.verItemModalTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.verItemModalTitle h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    color: #222;
+}
+
+/* Lista de productos/insumos */
+.verItemList {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+.verItemList li {
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.verItemList li:last-child {
+    border-bottom: none;
+}
+
+.verItemLabel {
+    font-weight: 500;
+    color: #222;
+}
+
+.verItemCantidad {
+    color: #888;
+    font-size: 14px;
+    margin-left: 6px;
+}
+
+.verItemPrecio {
+    color: #4A90E2;
+    font-size: 14px;
+    margin-left: 10px;
+}
+
+.verItemEmpty {
+    color: #aaa;
+    font-size: 14px;
+    margin: 10px 0;
+    text-align: left;
+}

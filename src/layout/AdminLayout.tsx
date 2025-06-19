@@ -12,6 +12,7 @@ import { ProductosSection } from "../features/productos/ProductosSection";
 import { GestionSection }  from "../features/gestion/GestionSection";
 import { EstadisticasSection } from "../features/estadisticas/EstadisticasSection";
 import { SeguridadSection } from "../features/seguridad/SeguridadSection";
+import { PromocionesSection } from "../features/promociones/PromocionesSection";
 
 const AdminLayout: React.FC = () => {
     const location = useLocation();
@@ -30,6 +31,9 @@ const AdminLayout: React.FC = () => {
         }
         if (pathname.startsWith("/admin/productos")) {
             return <ProductosSection />;
+        }
+        if (pathname.startsWith("/admin/promociones")) {
+            return <PromocionesSection />;
         }
         if (pathname.startsWith("/admin/gestion")) {
             return <GestionSection />;

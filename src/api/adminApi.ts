@@ -1,3 +1,4 @@
+import interceptorApi from './interceptorApi';
 import { 
     InsumoApi, 
     RegistroInsumoApi, 
@@ -6,7 +7,8 @@ import {
     ArticuloManufacturadoApi,
     ArticuloManufacturadoDetalleApi,
     RolApi,
-    ClienteApi
+    ClienteApi,
+    PromocionApi,
 } from "../types/adminTypes";
 
 // ================================================================
@@ -31,9 +33,8 @@ export const fetchInsumos = async (
     size: number;
     number: number;
 }> => {
-    const res = await fetch(`/api/insumos?page=${page}&size=${size}&sort=${sort}`);
-    if (!res.ok) throw new Error('Error al obtener insumos');
-    const data = await res.json();
+    const response = await interceptorApi.get(`/insumos?page=${page}&size=${size}&sort=${sort}`);
+    const data = response.data;
     
     // Mapear el contenido para añadir la propiedad estado
     return {
@@ -50,8 +51,8 @@ export const fetchInsumos = async (
  * @param id - ID del insumo
  */
 export const patchEstadoInsumo = async (id: number) => {
-    const res = await fetch(`/api/insumos/${id}/estado`, { method: "PATCH" });
-    if (!res.ok) throw new Error('Error al cambiar estado del insumo');
+    const response = await interceptorApi.patch(`/insumos/${id}/estado`);
+    return response.data;
 };
 
 /**
@@ -83,13 +84,13 @@ export const createInsumo = async (
         formData.append("file", imageFile);
     }
     
-    const res = await fetch("/api/insumos", {
-        method: "POST",
-        body: formData,
+    const response = await interceptorApi.post("/insumos", formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
     });
     
-    if (!res.ok) throw new Error('Error al crear el insumo');
-    return res.json();
+    return response.data;
 };
 
 /**
@@ -112,13 +113,13 @@ export const updateInsumo = async (id: number, insumoData: any, imageFile?: File
         formData.append("file", imageFile);
     }
     
-    const res = await fetch(`/api/insumos/${id}`, {
-        method: "PUT",
-        body: formData,
+    const response = await interceptorApi.put(`/insumos/${id}`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
     });
     
-    if (!res.ok) throw new Error('Error al actualizar el insumo');
-    return res.json();
+    return response.data;
 };
 
 // ================================================================
@@ -131,13 +132,8 @@ export const updateInsumo = async (id: number, insumoData: any, imageFile?: File
  * @returns Datos del registro creado
  */
 export const createRegistroInsumo = async (registroData: RegistroInsumoApi) => {
-    const res = await fetch("/api/registros-insumo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(registroData),
-    });
-    if (!res.ok) throw new Error('Error al registrar movimiento de stock');
-    return res.json();
+    const response = await interceptorApi.post("/registros-insumo", registroData);
+    return response.data;
 };
 
 // ================================================================
@@ -149,9 +145,8 @@ export const createRegistroInsumo = async (registroData: RegistroInsumoApi) => {
  * @returns Lista de rubros
  */
 export const fetchRubros = async (): Promise<RubroApi[]> => {
-    const res = await fetch("/api/rubros");
-    if (!res.ok) throw new Error('Error al obtener rubros');
-    return res.json();
+    const response = await interceptorApi.get("/rubros");
+    return response.data;
 };
 
 /**
@@ -159,11 +154,10 @@ export const fetchRubros = async (): Promise<RubroApi[]> => {
  * @returns Lista de rubros formateados para tabla
  */
 export const fetchRubrosTable = async (): Promise<RubroTable[]> => {
-    const res = await fetch("/api/rubros");
-    if (!res.ok) throw new Error('Error al obtener rubros para tabla');
-    const data: RubroApi[] = await res.json();
+    const response = await interceptorApi.get("/rubros");
+    const data = response.data;
     
-    return data.map((r) => ({
+    return data.map((r: RubroApi) => ({
         id: r.id,
         rubro: r.denominacion,
         padre: r.rubroPadre ? r.rubroPadre.denominacion : "",
@@ -176,8 +170,8 @@ export const fetchRubrosTable = async (): Promise<RubroTable[]> => {
  * @param id - ID del rubro
  */
 export const patchEstadoRubro = async (id: number | string) => {
-    const res = await fetch(`/api/rubros/${id}/estado`, { method: "PATCH" });
-    if (!res.ok) throw new Error('Error al cambiar estado del rubro');
+    const response = await interceptorApi.patch(`/rubros/${id}/estado`);
+    return response.data;
 };
 
 /**
@@ -190,13 +184,8 @@ export const createRubro = async (rubroData: {
     tipoRubro: string;
     rubroPadre?: { id: string | number } | null;
 }): Promise<RubroApi> => {
-    const res = await fetch("/api/rubros", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rubroData),
-    });
-    if (!res.ok) throw new Error('Error al crear el rubro');
-    return res.json();
+    const response = await interceptorApi.post("/rubros", rubroData);
+    return response.data;
 };
 
 /**
@@ -210,13 +199,8 @@ export const updateRubro = async (id: number | string, rubroData: {
     tipoRubro: string;
     rubroPadre?: { id: string | number } | null;
 }): Promise<RubroApi> => {
-    const res = await fetch(`/api/rubros/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rubroData),
-    });
-    if (!res.ok) throw new Error('Error al actualizar el rubro');
-    return res.json();
+    const response = await interceptorApi.put(`/rubros/${id}`, rubroData);
+    return response.data;
 };
 
 // ================================================================
@@ -241,9 +225,8 @@ export const fetchArticulosManufacturados = async (
     size: number;
     number: number;
 }> => {
-    const res = await fetch(`/api/manufacturados?page=${page}&size=${size}&sort=${sort}`);
-    if (!res.ok) throw new Error('Error al obtener artículos manufacturados');
-    const data = await res.json();
+    const response = await interceptorApi.get(`/manufacturados?page=${page}&size=${size}&sort=${sort}`);
+    const data = response.data;
     
     // Mapear el contenido para añadir la propiedad estado
     return {
@@ -261,9 +244,8 @@ export const fetchArticulosManufacturados = async (
  * @returns Datos del artículo manufacturado
  */
 export const fetchArticuloManufacturadoById = async (id: number): Promise<ArticuloManufacturadoApi> => {
-    const res = await fetch(`/api/manufacturados/${id}`);
-    if (!res.ok) throw new Error('Error al obtener el artículo manufacturado');
-    const data = await res.json();
+    const response = await interceptorApi.get(`/manufacturados/${id}`);
+    const data = response.data;
     
     return {
         ...data,
@@ -276,8 +258,8 @@ export const fetchArticuloManufacturadoById = async (id: number): Promise<Articu
  * @param id - ID del artículo manufacturado
  */
 export const patchEstadoArticuloManufacturado = async (id: number) => {
-    const res = await fetch(`/api/manufacturados/${id}/estado`, { method: "PATCH" });
-    if (!res.ok) throw new Error('Error al cambiar estado del artículo manufacturado');
+    const response = await interceptorApi.patch(`/manufacturados/${id}/estado`);
+    return response.data;
 };
 
 /**
@@ -310,13 +292,13 @@ export const createArticuloManufacturado = async (
         formData.append("file", imageFile);
     }
     
-    const res = await fetch("/api/manufacturados", {
-        method: "POST",
-        body: formData,
+    const response = await interceptorApi.post("/manufacturados", formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
     });
     
-    if (!res.ok) throw new Error('Error al crear el artículo manufacturado');
-    return res.json();
+    return response.data;
 };
 
 /**
@@ -339,13 +321,13 @@ export const updateArticuloManufacturado = async (id: number, articuloData: any,
         formData.append("file", imageFile);
     }
     
-    const res = await fetch(`/api/manufacturados/${id}`, {
-        method: "PUT",
-        body: formData,
+    const response = await interceptorApi.put(`/manufacturados/${id}`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
     });
     
-    if (!res.ok) throw new Error('Error al actualizar el artículo manufacturado');
-    return res.json();
+    return response.data;
 };
 
 // ================================================================
@@ -357,9 +339,8 @@ export const updateArticuloManufacturado = async (id: number, articuloData: any,
  * @returns Lista de roles
  */
 export const fetchRoles = async (): Promise<RolApi[]> => {
-    const res = await fetch("/api/roles");
-    if (!res.ok) throw new Error('Error al obtener roles');
-    const data = await res.json();
+    const response = await interceptorApi.get("/roles");
+    const data = response.data;
     
     // Mapear para añadir el estado calculado
     return data.map((rol: any) => ({
@@ -374,9 +355,8 @@ export const fetchRoles = async (): Promise<RolApi[]> => {
  * @returns Datos del rol
  */
 export const fetchRolById = async (id: number): Promise<RolApi> => {
-    const res = await fetch(`/api/roles/${id}`);
-    if (!res.ok) throw new Error('Error al obtener el rol');
-    const data = await res.json();
+    const response = await interceptorApi.get(`/roles/${id}`);
+    const data = response.data;
     
     return {
         ...data,
@@ -392,18 +372,9 @@ export const fetchRolById = async (id: number): Promise<RolApi> => {
 export const createRol = async (rolData: {
     denominacion: string;
 }): Promise<RolApi> => {
-    const res = await fetch("/api/roles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rolData),
-    });
+    const response = await interceptorApi.post("/roles", rolData);
+    const data = response.data;
     
-    if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Error al crear el rol: ${errorText}`);
-    }
-    
-    const data = await res.json();
     return {
         ...data,
         estado: "Activo" // Un rol recién creado siempre está activo
@@ -419,18 +390,9 @@ export const createRol = async (rolData: {
 export const updateRol = async (id: number, rolData: {
     denominacion: string;
 }): Promise<RolApi> => {
-    const res = await fetch(`/api/roles/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rolData),
-    });
+    const response = await interceptorApi.put(`/roles/${id}`, rolData);
+    const data = response.data;
     
-    if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Error al actualizar el rol: ${errorText}`);
-    }
-    
-    const data = await res.json();
     return {
         ...data,
         estado: data.fechaBaja === null ? "Activo" : "Inactivo"
@@ -442,8 +404,8 @@ export const updateRol = async (id: number, rolData: {
  * @param id - ID del rol
  */
 export const patchEstadoRol = async (id: number) => {
-    const res = await fetch(`/api/roles/${id}/estado`, { method: "PATCH" });
-    if (!res.ok) throw new Error('Error al cambiar estado del rol');
+    const response = await interceptorApi.patch(`/roles/${id}/estado`);
+    return response.data;
 };
 
 // ================================================================
@@ -468,9 +430,8 @@ export const fetchClientes = async (
     size: number;
     number: number;
 }> => {
-    const res = await fetch(`/api/clientes?page=${page}&size=${size}&sort=${sort}`);
-    if (!res.ok) throw new Error('Error al obtener clientes');
-    const data = await res.json();
+    const response = await interceptorApi.get(`/clientes?page=${page}&size=${size}&sort=${sort}`);
+    const data = response.data;
     
     // Mapear el contenido para añadir la propiedad estado
     return {
@@ -488,9 +449,8 @@ export const fetchClientes = async (
  * @returns Datos del cliente
  */
 export const fetchClienteById = async (id: number): Promise<ClienteApi> => {
-    const res = await fetch(`/api/clientes/${id}`);
-    if (!res.ok) throw new Error('Error al obtener el cliente');
-    const data = await res.json();
+    const response = await interceptorApi.get(`/clientes/${id}`);
+    const data = response.data;
     
     return {
         ...data,
@@ -510,18 +470,9 @@ export const createCliente = async (clienteData: {
     email: string;
     rol: any;
 }): Promise<ClienteApi> => {
-    const res = await fetch("/api/clientes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(clienteData),
-    });
+    const response = await interceptorApi.post("/clientes", clienteData);
+    const data = response.data;
     
-    if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Error al crear el cliente');
-    }
-    
-    const data = await res.json();
     return {
         ...data,
         estado: "Activo" // Un cliente recién creado siempre está activo
@@ -541,18 +492,9 @@ export const updateCliente = async (id: number, clienteData: {
     email: string;
     rol: any;
 }): Promise<ClienteApi> => {
-    const res = await fetch(`/api/clientes/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(clienteData),
-    });
+    const response = await interceptorApi.put(`/clientes/${id}`, clienteData);
+    const data = response.data;
     
-    if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Error al actualizar el cliente');
-    }
-    
-    const data = await res.json();
     return {
         ...data,
         estado: data.fechaBaja === null ? "Activo" : "Inactivo"
@@ -564,13 +506,67 @@ export const updateCliente = async (id: number, clienteData: {
  * @param id - ID del cliente
  */
 export const patchEstadoCliente = async (id: number) => {
-    const res = await fetch(`/api/clientes/${id}/estado`, { method: "PATCH" });
-    if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Error al cambiar estado del cliente');
-    }
-    return res.json();
+    const response = await interceptorApi.patch(`/clientes/${id}/estado`);
+    return response.data;
 };
+
+// ================================================================
+// ENDPOINTS PARA PROMOCIONES
+// ================================================================
+
+/**
+ * Obtiene todas las promociones
+ * @returns Lista de promociones
+ */
+export const fetchPromociones = async (): Promise<PromocionApi[]> => {
+    const response = await interceptorApi.get("/promociones");
+    return response.data;
+};
+
+/**
+ * Obtiene una promoción por su ID
+ * @param id - ID de la promoción
+ * @returns Datos de la promoción
+ */
+export const fetchPromocionById = async (id: number): Promise<PromocionApi> => {
+    const response = await interceptorApi.get(`/promociones/${id}`);
+    return response.data;
+};
+
+/**
+ * Obtiene todas las promociones activas
+ * @returns Lista de promociones activas
+ */
+export const fetchPromocionesActivas = async (): Promise<PromocionApi[]> => {
+    const response = await interceptorApi.get("/promociones/activas");
+    return response.data;
+};
+
+
+/**
+ * Crea una nueva promoción
+ * @param promocionData - Datos de la promoción a crear
+ * @returns Datos de la promoción creada
+ */
+export const createPromocion = async (promocionData: Omit<PromocionApi, "id">): Promise<PromocionApi> => {
+    const response = await interceptorApi.post("/promociones", promocionData);
+    return response.data;
+};
+
+/**
+ * Actualiza una promoción existente
+ * @param id - ID de la promoción a actualizar
+ * @param promocionData - Nuevos datos de la promoción
+ * @returns Datos de la promoción actualizada
+ */
+export const updatePromocion = async (
+    id: number,
+    promocionData: Omit<PromocionApi, "id">
+): Promise<PromocionApi> => {
+    const response = await interceptorApi.put(`/promociones/${id}`, promocionData);
+    return response.data;
+};
+
 
 // ================================================================
 // ÍNDICE DE FUNCIONES POR SECCIÓN
@@ -613,4 +609,13 @@ CLIENTES:
 - createCliente()            - POST /api/clientes
 - updateCliente()            - PUT /api/clientes/{id}
 - patchEstadoCliente()       - PATCH /api/clientes/{id}/estado
+
+PROMOCIONES:
+- fetchPromociones()         - GET /api/promociones
+- fetchPromocionById()       - GET /api/promociones/{id}
+- fetchPromocionesActivas()  - GET /api/promociones/activas
+- createPromocion()          - POST /api/promociones
+- updatePromocion()          - PUT /api/promociones/{id}
 */
+
+// ...existing code...

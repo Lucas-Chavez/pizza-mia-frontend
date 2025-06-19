@@ -49,6 +49,16 @@ const SideBar: React.FC = () => {
                 </li>
                 <li>
                     <NavLink 
+                        to="/admin/promociones"
+                        className={({ isActive }) => 
+                            `${styles.menuButton} ${isActive ? styles.selected : ""}`
+                        }
+                    >
+                        Promociones
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink 
                         to="/admin/gestion"
                         className={({ isActive }) => 
                             `${styles.menuButton} ${isActive ? styles.selected : ""}`

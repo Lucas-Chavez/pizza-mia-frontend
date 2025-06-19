@@ -367,6 +367,34 @@ export type StockStats = {
 };
 
 // ================================================================
+// TIPOS PARA PROMOCIONES
+// ================================================================
+
+/**
+ * Tipo para representar un detalle de promoción
+ * @interface PromocionDetalleApi
+ */
+export type PromocionDetalleApi = {
+    id?: number;
+    cantidad: number;
+    articuloManufacturado?: { id: number } | null; // Hacer opcional
+    articuloInsumo?: { id: number } | null;        // Hacer opcional
+};
+
+/**
+ * Tipo para representar una promoción en la API
+ * @interface PromocionApi
+ */
+export type PromocionApi = {
+    id: number;
+    fechaInicio: string;
+    fechaFin: string;
+    descuento: number;
+    precio?: number;
+    detalles: PromocionDetalleApi[];
+};
+
+// ================================================================
 // ÍNDICE DE TIPOS POR CATEGORÍA
 // ================================================================
 
@@ -410,4 +438,8 @@ UTILIDADES:
 - TopProductoStats           - Estadísticas de productos
 - VentasStats                - Estadísticas de ventas
 - StockStats                 - Estadísticas de inventario
+
+PROMOCIONES:
+- PromocionApi               - Datos completos de la promoción
+- PromocionDetalleApi        - Detalles de la promoción
 */
