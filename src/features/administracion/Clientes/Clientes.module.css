@@ -58,3 +58,24 @@
     margin-bottom: 10px;
     text-align: center;
 }
+
+/* Agregar a Clientes.module.css */
+.passwordHelp {
+    color: #777;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.passwordInfo {
+    background-color: #f8f9fa;
+    border-left: 3px solid #17a2b8;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 3px;
+    color: #555;
+    font-size: 14px;
+}
+
+.passwordInfo p {
+    margin: 0;
+}

@@ -9,6 +9,7 @@ import {
     RolApi,
     ClienteApi,
     PromocionApi,
+    EmpleadoApi,
 } from "../types/adminTypes";
 
 // ================================================================
@@ -467,6 +468,7 @@ export const createCliente = async (clienteData: {
     nombre: string;
     apellido: string;
     telefono?: number;
+    password: string;
     email: string;
     rol: any;
 }): Promise<ClienteApi> => {
@@ -485,14 +487,14 @@ export const createCliente = async (clienteData: {
  * @param clienteData - Nuevos datos del cliente
  * @returns Datos del cliente actualizado
  */
-export const updateCliente = async (id: number, clienteData: {
+export const updateCliente = async (id: number, UpdateCliente: {
     nombre: string;
     apellido: string;
     telefono?: number;
     email: string;
-    rol: any;
+    auth0Id: string;
 }): Promise<ClienteApi> => {
-    const response = await interceptorApi.put(`/clientes/${id}`, clienteData);
+    const response = await interceptorApi.put(`/clientes/${id}`, UpdateCliente);
     const data = response.data;
     
     return {
@@ -567,6 +569,123 @@ export const updatePromocion = async (
     return response.data;
 };
 
+// ================================================================
+// ENDPOINTS PARA EMPLEADOS
+// ================================================================
+
+/**
+ * Obtiene una lista paginada de empleados
+ * @param page - Número de página (default: 0)
+ * @param size - Tamaño de página (default: 8)
+ * @param sort - Campo de ordenamiento (default: "id")
+ * @returns Objeto con contenido paginado e información de paginación
+ */
+export const fetchEmpleados = async (
+    page: number = 0,
+    size: number = 8,
+    sort: string = "id"
+): Promise<{
+    content: EmpleadoApi[];
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    number: number;
+}> => {
+    const response = await interceptorApi.get(`/empleados?page=${page}&size=${size}&sort=${sort}`);
+    const data = response.data;
+    
+    // Mapear el contenido para añadir la propiedad estado
+    return {
+        ...data,
+        content: data.content.map((empleado: any) => ({
+            ...empleado,
+            estado: empleado.fechaBaja === null ? "Activo" : "Inactivo"
+        }))
+    };
+};
+
+/**
+ * Obtiene un empleado por su ID
+ * @param id - ID del empleado
+ * @returns Datos del empleado
+ */
+export const fetchEmpleadoById = async (id: number): Promise<EmpleadoApi> => {
+    const response = await interceptorApi.get(`/empleados/${id}`);
+    const data = response.data;
+    
+    return {
+        ...data,
+        estado: data.fechaBaja === null ? "Activo" : "Inactivo"
+    };
+};
+
+/**
+ * Verifica si un usuario Auth0 corresponde a un empleado
+ * @param auth0Id - ID de Auth0 del usuario
+ * @returns Datos del empleado o false si no existe
+ */
+export const getUserByAuthId = async (auth0Id: string): Promise<EmpleadoApi | boolean> => {
+    try {
+        const response = await interceptorApi.post("/empleados/getUserById", { auth0Id });
+        return response.data;
+    } catch (error) {
+        return false;
+    }
+};
+
+/**
+ * Crea un nuevo empleado
+ * @param empleadoData - Datos del empleado a crear
+ * @returns Datos del empleado creado
+ */
+export const createEmpleado = async (empleadoData: {
+    nombre: string;
+    apellido: string;
+    telefono: number;
+    password: string;
+    email: string;
+    rol: { id: number };
+}): Promise<EmpleadoApi> => {
+    const response = await interceptorApi.post("/empleados", empleadoData);
+    const data = response.data;
+    
+    return {
+        ...data,
+        estado: "Activo" // Un empleado recién creado siempre está activo
+    };
+};
+
+/**
+ * Actualiza un empleado existente
+ * @param id - ID del empleado a actualizar
+ * @param empleadoData - Nuevos datos del empleado
+ * @returns Datos del empleado actualizado
+ */
+export const updateEmpleado = async (id: number, UpdateEmpleado: {
+    nombre: string;
+    apellido: string;
+    telefono: number;
+    email: string;
+    auth0Id: string;
+    rol?: { id: number };
+}): Promise<EmpleadoApi> => {
+    const response = await interceptorApi.put(`/empleados/${id}`, UpdateEmpleado);
+    const data = response.data;
+    
+    return {
+        ...data,
+        estado: data.fechaBaja === null ? "Activo" : "Inactivo"
+    };
+};
+
+/**
+ * Cambia el estado de un empleado (activo/inactivo)
+ * @param id - ID del empleado
+ */
+export const patchEstadoEmpleado = async (id: number) => {
+    const response = await interceptorApi.patch(`/empleados/${id}/estado`);
+    return response.data;
+};
 
 // ================================================================
 // ÍNDICE DE FUNCIONES POR SECCIÓN
@@ -616,6 +735,12 @@ PROMOCIONES:
 - fetchPromocionesActivas()  - GET /api/promociones/activas
 - createPromocion()          - POST /api/promociones
 - updatePromocion()          - PUT /api/promociones/{id}
-*/
 
-// ...existing code...
+EMPLEADOS:
+- fetchEmpleados()             - GET /api/empleados (paginado)
+- fetchEmpleadoById()         - GET /api/empleados/{id}
+- getUserByAuthId()           - POST /api/empleados/getUserById
+- createEmpleado()            - POST /api/empleados
+- updateEmpleado()            - PUT /api/empleados/{id}
+- patchEstadoEmpleado()       - PATCH /api/empleados/{id}/estado
+*/

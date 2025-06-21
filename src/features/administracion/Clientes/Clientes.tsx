@@ -25,7 +25,8 @@ const Clientes: React.FC = () => {
         nombre: "",
         apellido: "",
         telefono: 0,
-        email: ""
+        email: "",
+        password: ""
     });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
@@ -95,7 +96,8 @@ const Clientes: React.FC = () => {
             nombre: "",
             apellido: "",
             telefono: 0,
-            email: ""
+            email: "",
+            password: ""
         });
         setError("");
     };
@@ -108,7 +110,8 @@ const Clientes: React.FC = () => {
             nombre: cliente.nombre,
             apellido: cliente.apellido,
             telefono: cliente.telefono || 0,
-            email: cliente.email || ""
+            email: cliente.email || "",
+            password: "" // No mostrar la contraseña en edición
         });
         setError("");
     };
@@ -137,6 +140,13 @@ const Clientes: React.FC = () => {
             setError("El email no es válido");
             return false;
         }
+        
+        // Validar contraseña solo al crear nuevo cliente
+        if (!isEditMode && !formData.password.trim()) {
+            setError("La contraseña es obligatoria para nuevos clientes");
+            return false;
+        }
+        
         if (!clienteRolId) {
             setError("No se pudo determinar el rol de cliente. Intente nuevamente.");
             return false;
@@ -154,17 +164,33 @@ const Clientes: React.FC = () => {
                 return;
             }
 
-            const clienteData = {
-                nombre: formData.nombre.trim(),
-                apellido: formData.apellido.trim(),
-                telefono: Number(formData.telefono),
-                email: formData.email.trim(),
-                rol: { id: clienteRolId }
-            };
-
             if (isEditMode && clienteToEdit) {
-                await updateCliente(clienteToEdit.id, clienteData);
+                // Verificar si existe el objeto user y el authOId (nota la O mayúscula)
+                if (!clienteToEdit.user || !clienteToEdit.user.authOId) {
+                    console.error("No se pudo encontrar el ID de Auth0:", clienteToEdit);
+                    setError("Error: No se pudo identificar el ID de usuario de Auth0");
+                    return;
+                }
+
+                // Actualizar cliente (sin enviar contraseña)
+                const UpdateCliente = {
+                    nombre: formData.nombre.trim(),
+                    apellido: formData.apellido.trim(),
+                    telefono: Number(formData.telefono),
+                    email: formData.email.trim(),
+                    auth0Id: clienteToEdit.user.authOId, // Usa user.authOId en lugar de usuario.auth0Id
+                };
+                await updateCliente(clienteToEdit.id, UpdateCliente);
             } else {
+                // Crear cliente (con contraseña)
+                const clienteData = {
+                    nombre: formData.nombre.trim(),
+                    apellido: formData.apellido.trim(),
+                    telefono: Number(formData.telefono),
+                    email: formData.email.trim(),
+                    password: formData.password.trim(),
+                    rol: { id: clienteRolId }
+                };
                 await createCliente(clienteData);
             }
 
@@ -273,6 +299,31 @@ const Clientes: React.FC = () => {
                                     onChange={handleInputChange}
                                 />
                             </div>
+
+                            {/* Mostrar campo de contraseña solo cuando se crea un nuevo cliente */}
+                            {!isEditMode && (
+                                <div className={styles.formGroup}>
+                                    <label>Contraseña</label>
+                                    <input
+                                        className={`${shared.input} ${styles.input}`}
+                                        type="password"
+                                        name="password"
+                                        placeholder="Contraseña del cliente"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                    />
+                                    <small className={styles.passwordHelp}>
+                                        La contraseña es requerida para nuevos clientes.
+                                    </small>
+                                </div>
+                            )}
+
+                            {/* Si estamos en modo edición, mostrar mensaje informativo */}
+                            {isEditMode && (
+                                <div className={styles.passwordInfo}>
+                                    <p>La contraseña solo puede ser cambiada por el cliente desde su perfil.</p>
+                                </div>
+                            )}
 
                             <div className={styles.formGroup}>
                                 <label>Teléfono</label>

@@ -132,9 +132,9 @@ export type EmpleadoApi = {
     nombre: string;
     apellido: string;
     email: string;
-    telefono?: string;
+    telefono: number;
+    user: UsuarioApi
     rol: RolApi;
-    domicilio?: DomicilioApi;
     fechaAlta: string;
     fechaBaja: string | null;
     estado?: string; // "Activo" | "Inactivo"
@@ -148,7 +148,7 @@ export type ClienteApi = {
     id: number;
     nombre: string;
     apellido: string;
-    usuario: string;
+    user: UsuarioApi; // Usuario asociado al cliente
     email?: string;
     rol: RolApi; // Rol del cliente, puede ser "Cliente" o "Administrador"
     telefono?: number;
@@ -157,6 +157,11 @@ export type ClienteApi = {
     fechaBaja: string | null;
     estado?: string; // "Activo" | "Inactivo"
 };
+
+export type UsuarioApi = {
+    authOId: string;
+    username: string;
+}
 
 /**
  * Tipo para representar un rol de usuario

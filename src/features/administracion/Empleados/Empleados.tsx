@@ -1,88 +1,224 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import GenericTable from "../../../components/GenericTable/GenericTable";
 import { getGenericColumns } from "../../../components/GenericTable/getGenericColumns";
 import Button from "../../../components/Button/Button";
 import styles from "./Empleados.module.css";
 import shared from "../../../styles/common/Common.module.css";
-
-const initialEmpleados = [
-    { nombre: "Mariano", apellido: "Lugano", rol: "Cajero", estado: "Activo" },
-    { nombre: "Lucas", apellido: "Chavez", rol: "Cocinero", estado: "Activo" },
-    { nombre: "Geronimo", apellido: "Crescitelli", rol: "Admin", estado: "Inactivo" },
-    { nombre: "Nicolas", apellido: "Silva", rol: "Cajero", estado: "Activo" },
-];
-
-type NuevoEmpleado = {
-    nombre: string;
-    apellido: string;
-    rol: string;
-    estado: string;
-    email?: string;
-    telefono?: string;
-    password?: string;
-    repetirPassword?: string;
-    localidad?: string;
-    codigoPostal?: string;
-    calle?: string;
-};
+import Pagination from "../../../components/Pagination/Pagination";
+import { EmpleadoApi, RolApi } from "../../../types/adminTypes";
+import {
+    fetchEmpleados,
+    patchEstadoEmpleado,
+    createEmpleado,
+    updateEmpleado,
+    fetchRoles
+} from "../../../api/adminApi";
 
 const Empleados: React.FC = () => {
-    const [empleados, setEmpleados] = useState(initialEmpleados);
+    const [empleados, setEmpleados] = useState<EmpleadoApi[]>([]);
+    const [roles, setRoles] = useState<RolApi[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [nuevoEmpleado, setNuevoEmpleado] = useState<NuevoEmpleado>({
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [empleadoToEdit, setEmpleadoToEdit] = useState<EmpleadoApi | null>(null);
+    const [formData, setFormData] = useState({
         nombre: "",
         apellido: "",
-        rol: "",
-        estado: "Activo",
+        telefono: 0,
         email: "",
-        telefono: "",
         password: "",
         repetirPassword: "",
-        localidad: "",
-        codigoPostal: "",
-        calle: "",
+        rol: ""
     });
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
 
-    const toggleEstado = (index: number) => {
-        setEmpleados(empleados =>
-            empleados.map((emp, i) =>
-                i === index
-                    ? { ...emp, estado: emp.estado === "Activo" ? "Inactivo" : "Activo" }
-                    : emp
-            )
-        );
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalElements, setTotalElements] = useState(0);
+    const pageSize = 8;
+
+    // Cargar empleados al montar el componente y cuando cambie la página
+    useEffect(() => {
+        loadEmpleados();
+    }, [currentPage]);
+
+    // Cargar roles al montar el componente
+    useEffect(() => {
+        const loadRoles = async () => {
+            try {
+                const rolesData = await fetchRoles();
+                setRoles(rolesData);
+            } catch (err) {
+                console.error("Error al cargar roles:", err);
+            }
+        };
+        loadRoles();
+    }, []);
+
+    const loadEmpleados = async () => {
+        setLoading(true);
+        try {
+            const result = await fetchEmpleados(currentPage, pageSize);
+            setEmpleados(result.content);
+            setTotalPages(result.totalPages);
+            setTotalElements(result.totalElements);
+        } catch (error) {
+            console.error("Error al cargar empleados:", error);
+            setError("Error al cargar los empleados. Intenta nuevamente.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleEstado = async (id: number) => {
+        try {
+            await patchEstadoEmpleado(id);
+            await loadEmpleados(); // Recargar datos después del cambio
+        } catch (error) {
+            console.error("Error al cambiar estado del empleado:", error);
+            setError("Error al cambiar el estado del empleado");
+        }
     };
 
     const handleNuevoEmpleado = () => {
         setShowModal(true);
-        setNuevoEmpleado({ nombre: "", apellido: "", rol: "", estado: "Activo" });
+        setIsEditMode(false);
+        setEmpleadoToEdit(null);
+        setFormData({
+            nombre: "",
+            apellido: "",
+            telefono: 0,
+            email: "",
+            password: "",
+            repetirPassword: "",
+            rol: ""
+        });
         setError("");
     };
 
-    const handleEnviar = () => {
-        if (!nuevoEmpleado.nombre.trim() || !nuevoEmpleado.apellido.trim() || !nuevoEmpleado.rol.trim()) {
-            setError("Todos los campos son obligatorios");
-            return;
+    const handleEditEmpleado = (empleado: EmpleadoApi) => {
+        setShowModal(true);
+        setIsEditMode(true);
+        setEmpleadoToEdit(empleado);
+        setFormData({
+            nombre: empleado.nombre,
+            apellido: empleado.apellido,
+            telefono: empleado.telefono || 0,
+            email: empleado.email || "",
+            password: "",
+            repetirPassword: "",
+            rol: empleado.rol.id.toString()
+        });
+        setError("");
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const validateForm = () => {
+        if (!formData.nombre.trim()) {
+            setError("El nombre es obligatorio");
+            return false;
         }
-        setEmpleados([...empleados, nuevoEmpleado]);
-        setShowModal(false);
+        if (!formData.apellido.trim()) {
+            setError("El apellido es obligatorio");
+            return false;
+        }
+        if (!formData.email.trim()) {
+            setError("El email es obligatorio");
+            return false;
+        }
+        // Validación básica de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email.trim())) {
+            setError("El email no es válido");
+            return false;
+        }
+        
+        // Validar contraseña solo al crear nuevo empleado
+        if (!isEditMode) {
+            if (!formData.password.trim()) {
+                setError("La contraseña es obligatoria para nuevos empleados");
+                return false;
+            }
+            if (formData.password !== formData.repetirPassword) {
+                setError("Las contraseñas no coinciden");
+                return false;
+            }
+        }
+        
+        if (!formData.rol) {
+            setError("Debe seleccionar un rol");
+            return false;
+        }
+        return true;
+    };
+
+    const handleSubmit = async () => {
+        if (!validateForm()) return;
+
+        try {
+            if (isEditMode && empleadoToEdit) {
+                // Verificar si existe el objeto user y el authOId
+                if (!empleadoToEdit.user || !empleadoToEdit.user.authOId) {
+                    console.error("No se pudo encontrar el ID de Auth0:", empleadoToEdit);
+                    setError("Error: No se pudo identificar el ID de usuario de Auth0");
+                    return;
+                }
+
+                // Actualizar empleado (sin enviar contraseña)
+                const UpdateEmpleado = {
+                    nombre: formData.nombre.trim(),
+                    apellido: formData.apellido.trim(),
+                    telefono: Number(formData.telefono),
+                    email: formData.email.trim(),
+                    auth0Id: empleadoToEdit.user.authOId,
+                    rol: { id: Number(formData.rol) }
+                };
+                await updateEmpleado(empleadoToEdit.id, UpdateEmpleado);
+            } else {
+                // Crear empleado (con contraseña)
+                const empleadoData = {
+                    nombre: formData.nombre.trim(),
+                    apellido: formData.apellido.trim(),
+                    telefono: Number(formData.telefono),
+                    email: formData.email.trim(),
+                    password: formData.password.trim(),
+                    rol: { id: Number(formData.rol) }
+                };
+                await createEmpleado(empleadoData);
+            }
+
+            setShowModal(false);
+            await loadEmpleados(); // Recargar datos
+        } catch (error) {
+            console.error("Error al guardar empleado:", error);
+            setError(error instanceof Error ? error.message : "Error al guardar el empleado");
+        }
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
     };
 
     const columns = [
         { header: "Nombre", key: "nombre" },
         { header: "Apellido", key: "apellido" },
-        { header: "Rol", key: "rol" },
+        { header: "Email", key: "email" },
+        { header: "Rol", key: "rol", render: (value: any) => value?.denominacion || "-" },
+        { header: "Teléfono", key: "telefono", render: (value: any) => value || "-" },
         ...getGenericColumns({
-            onAlta: (_row, rowIndex) => {
-                if (empleados[rowIndex].estado === "Inactivo") toggleEstado(rowIndex);
+            onAlta: (row) => {
+                if (row.estado === "Inactivo") toggleEstado(row.id);
             },
-            onBaja: (_row, rowIndex) => {
-                if (empleados[rowIndex].estado === "Activo") toggleEstado(rowIndex);
+            onBaja: (row) => {
+                if (row.estado === "Activo") toggleEstado(row.id);
             },
-            onEditar: (_: unknown, rowIndex) => {
-                alert(`Editar empleado: ${empleados[rowIndex].nombre} ${empleados[rowIndex].apellido}`);
-                // Aquí puedes abrir tu modal de edición
+            onEditar: (row) => {
+                handleEditEmpleado(row);
             },
             disabledAlta: row => row.estado === "Activo",
             disabledBaja: row => row.estado === "Inactivo",
@@ -98,118 +234,158 @@ const Empleados: React.FC = () => {
                     onClick={handleNuevoEmpleado}
                     className={shared.nuevoButton}
                 />
-                <GenericTable columns={columns} data={empleados} />
+
+                {loading ? (
+                    <div className={styles.loadingContainer}>Cargando empleados...</div>
+                ) : error && empleados.length === 0 ? (
+                    <div className={styles.errorContainer}>{error}</div>
+                ) : (
+                    <>
+                        <GenericTable columns={columns} data={empleados} />
+
+                        {totalPages > 1 && (
+                            <div className={shared.paginationContainer}>
+                                <div className={styles.paginationInfo}>
+                                    Mostrando {empleados.length} de {totalElements} empleados
+                                </div>
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={handlePageChange}
+                                />
+                            </div>
+                        )}
+                    </>
+                )}
 
                 {showModal && (
                     <div className={shared.modalOverlay}>
                         <div className={`${shared.modalContent} ${styles.modalContent}`}>
-                            <h2 style={{ width: "100%", textAlign: "center", marginBottom: 18 }}>Nuevo empleado</h2>
+                            <h2>{isEditMode ? "Editar empleado" : "Nuevo empleado"}</h2>
+
                             <div className={styles.modalFormGrid}>
                                 {/* Sección Izquierda */}
                                 <div className={styles.modalLeft}>
-                                    <input
-                                        className={`${shared.input} ${styles.input}`}
-                                        type="text"
-                                        placeholder="Ingrese su nombre"
-                                        value={nuevoEmpleado.nombre}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, nombre: e.target.value })}
-                                    />
-                                    <input
-                                        className={`${shared.input} ${styles.input}`}
-                                        type="text"
-                                        placeholder="Ingrese su apellido"
-                                        value={nuevoEmpleado.apellido}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, apellido: e.target.value })}
-                                    />
-                                    <input
-                                        className={`${shared.input} ${styles.input}`}
-                                        type="email"
-                                        placeholder="Ingrese su email"
-                                        value={nuevoEmpleado.email || ""}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, email: e.target.value })}
-                                    />
-                                    <input
-                                        className={`${shared.input} ${styles.input}`}
-                                        type="text"
-                                        placeholder="Ingrese su número de telefono"
-                                        value={nuevoEmpleado.telefono || ""}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, telefono: e.target.value })}
-                                    />
-                                    <input
-                                        className={`${shared.input} ${styles.input}`}
-                                        type="password"
-                                        placeholder="Ingrese contraseña"
-                                        value={nuevoEmpleado.password || ""}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, password: e.target.value })}
-                                    />
-                                    <input
-                                        className={`${shared.input} ${styles.input}`}
-                                        type="password"
-                                        placeholder="Repita contraseña"
-                                        value={nuevoEmpleado.repetirPassword || ""}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, repetirPassword: e.target.value })}
-                                    />
-                                </div>
-                                {/* Sección Derecha */}
-                                <div className={styles.modalRight}>
-                                    <select
-                                        className={`${shared.input} ${styles.input}`}
-                                        value={nuevoEmpleado.rol}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, rol: e.target.value })}
-                                    >
-                                        <option value="">Seleccione un rol</option>
-                                        <option value="Cajero">Cajero</option>
-                                        <option value="Cocinero">Cocinero</option>
-                                        <option value="Admin">Admin</option>
-                                    </select>
-                                    <select
-                                        className={`${shared.input} ${styles.input}`}
-                                        value={nuevoEmpleado.localidad || ""}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, localidad: e.target.value })}
-                                    >
-                                        <option value="">Seleccione una localidad</option>
-                                        <option value="Centro">Centro</option>
-                                        <option value="Norte">Norte</option>
-                                        <option value="Sur">Sur</option>
-                                    </select>
-                                    <input
-                                        className={`${shared.input} ${styles.input}`}
-                                        type="text"
-                                        placeholder="Ingrese codigo postal"
-                                        value={nuevoEmpleado.codigoPostal || ""}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, codigoPostal: e.target.value })}
-                                    />
-                                    <input
-                                        className={`${shared.input} ${styles.input}`}
-                                        type="text"
-                                        placeholder="Nombre de la calle"
-                                        value={nuevoEmpleado.calle || ""}
-                                        onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, calle: e.target.value })}
-                                    />
-                                    <div className={styles.checkRow}>
+                                    <div className={styles.formGroup}>
+                                        <label>Nombre</label>
                                         <input
-                                            type="checkbox"
-                                            id="habilitado"
-                                            checked={nuevoEmpleado.estado === "Activo"}
-                                            onChange={e => setNuevoEmpleado({ ...nuevoEmpleado, estado: e.target.checked ? "Activo" : "Inactivo" })}
+                                            className={`${shared.input} ${styles.input}`}
+                                            type="text"
+                                            name="nombre"
+                                            placeholder="Nombre del empleado"
+                                            value={formData.nombre}
+                                            onChange={handleInputChange}
                                         />
-                                        <label htmlFor="habilitado" style={{ marginLeft: 8, fontSize: 16 }}>Habilitado</label>
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label>Apellido</label>
+                                        <input
+                                            className={`${shared.input} ${styles.input}`}
+                                            type="text"
+                                            name="apellido"
+                                            placeholder="Apellido del empleado"
+                                            value={formData.apellido}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label>Email</label>
+                                        <input
+                                            className={`${shared.input} ${styles.input}`}
+                                            type="email"
+                                            name="email"
+                                            placeholder="Email del empleado"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label>Teléfono</label>
+                                        <input
+                                            className={`${shared.input} ${styles.input}`}
+                                            type="number"
+                                            name="telefono"
+                                            placeholder="Teléfono del empleado"
+                                            value={formData.telefono}
+                                            onChange={handleInputChange}
+                                        />
                                     </div>
                                 </div>
+
+                                {/* Sección Derecha */}
+                                <div className={styles.modalRight}>
+                                    <div className={styles.formGroup}>
+                                        <label>Rol</label>
+                                        <select
+                                            className={`${shared.input} ${styles.input}`}
+                                            name="rol"
+                                            value={formData.rol}
+                                            onChange={handleInputChange}
+                                        >
+                                            <option value="">Seleccione un rol</option>
+                                            {roles.map(rol => (
+                                                <option key={rol.id} value={rol.id}>
+                                                    {rol.denominacion}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Mostrar campos de contraseña solo cuando se crea un nuevo empleado */}
+                                    {!isEditMode && (
+                                        <>
+                                            <div className={styles.formGroup}>
+                                                <label>Contraseña</label>
+                                                <input
+                                                    className={`${shared.input} ${styles.input}`}
+                                                    type="password"
+                                                    name="password"
+                                                    placeholder="Contraseña"
+                                                    value={formData.password}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+
+                                            <div className={styles.formGroup}>
+                                                <label>Repetir Contraseña</label>
+                                                <input
+                                                    className={`${shared.input} ${styles.input}`}
+                                                    type="password"
+                                                    name="repetirPassword"
+                                                    placeholder="Repetir contraseña"
+                                                    value={formData.repetirPassword}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Si estamos en modo edición, mostrar mensaje informativo */}
+                                    {isEditMode && (
+                                        <div className={styles.passwordInfo}>
+                                            <p>La contraseña solo puede ser cambiada por el empleado desde su perfil.</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+
                             {error && <div className={shared.error}>{error}</div>}
-                            <div className={`${shared.modalActions} ${styles.modalActions}`}>
+
+                            <div className={shared.modalActions}>
                                 <button
-                                    className={`${shared.enviarButton} ${styles.enviarButton}`}
-                                    onClick={handleEnviar}
+                                    className={shared.enviarButton}
+                                    onClick={handleSubmit}
                                 >
-                                    Confirmar
+                                    {isEditMode ? "Actualizar" : "Crear"}
                                 </button>
                                 <button
-                                    className={`${shared.salirButton} ${styles.salirButton}`}
+                                    className={shared.salirButton}
                                     onClick={() => setShowModal(false)}
                                 >
-                                    Salir
+                                    Cancelar
                                 </button>
                             </div>
                         </div>
