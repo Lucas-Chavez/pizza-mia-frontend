@@ -1,14 +1,43 @@
-/* Estilos específicos para Clientes */
+/*---------------------
+Scroll Tabla (Email)
+-----------------------*/
+.emailCell {
+    max-width: 200px;
+    overflow-x: auto;
+    white-space: nowrap;
+    /* text-overflow: ellipsis; */ /* Elimina o comenta esta línea */
+    display: block;
+    scrollbar-width: none; /* Oculta la barra de desplazamiento */
+    /* scrollbar-width: thin; */ /* Barra de desplazamiento delgada */
+    scrollbar-color: #bbb #f5f5f5;
+}
+.emailCell::-webkit-scrollbar {
+    height: 2px;                        /* Altura aún más pequeña */
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+.emailCell::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 2px;
+}
+.emailCell::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
 
+/*---------------------
+Modal de Cliente
+-----------------------*/
 .modalContent {
     padding: 10px 28px 24px 28px;
     min-width: 420px;
 }
 
+/*---------------------
+Formulario
+-----------------------*/
 .formGroup {
     margin-bottom: 16px;
 }
-
 .formGroup label {
     display: block;
     margin-bottom: 8px;
@@ -16,7 +45,6 @@
     color: var(--text-color);
     font-weight: 400;
 }
-
 .input, .select {
     border-radius: 38px;
     border: 1px solid #d0d0d0;
@@ -25,7 +53,6 @@
     padding: 10px 16px;
     box-sizing: border-box;
 }
-
 .select {
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -34,7 +61,9 @@
     background-size: 16px;
 }
 
-/* Estilos adicionales para los mensajes de carga y error */
+/*---------------------
+Mensajes de carga y error
+-----------------------*/
 .loadingContainer {
     display: flex;
     justify-content: center;
@@ -42,7 +71,6 @@
     color: #666;
     font-size: 16px;
 }
-
 .errorContainer {
     background-color: #ffebee;
     color: #d32f2f;
@@ -52,6 +80,9 @@
     text-align: center;
 }
 
+/*---------------------
+Paginación
+-----------------------*/
 .paginationInfo {
     color: #666;
     font-size: 14px;
@@ -59,13 +90,14 @@
     text-align: center;
 }
 
-/* Agregar a Clientes.module.css */
+/*---------------------
+Ayuda y mensajes de contraseña
+-----------------------*/
 .passwordHelp {
     color: #777;
     font-size: 12px;
     margin-top: 4px;
 }
-
 .passwordInfo {
     background-color: #f8f9fa;
     border-left: 3px solid #17a2b8;
@@ -75,7 +107,6 @@
     color: #555;
     font-size: 14px;
 }
-
 .passwordInfo p {
     margin: 0;
 }

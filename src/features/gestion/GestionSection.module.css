@@ -1,0 +1,105 @@
+/*-----------------------
+Tabla de Gestión
+------------------------*/
+.gestionTableContainer {
+    width: 95%;
+}
+
+/* Badge de estado */
+.estadoBadge {
+    color: #fff;
+    border-radius: 8px;
+    padding: 4px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 110px;
+    text-align: center;
+}
+
+/* Modal de acciones */
+.accionesModal {
+    position: absolute;
+    top: 38px;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 8px 12px;
+    z-index: 10;
+    min-width: 80px;
+}
+
+.accionBtn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.accionBtn:hover {
+    background: #f5f5f5;
+}
+
+/*-----------------------
+HeaderFilterSection
+------------------------*/
+.headerGestionContainer {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.headerGestionTitleRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.headerGestionTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+}
+
+.headerGestionFiltersRow {
+    display: flex;
+    align-items: center;      /* Centra verticalmente los elementos */
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;  /* Centra horizontalmente toda la fila */
+    min-height: 56px;         /* Altura mínima para mejor alineación */
+}
+
+.headerGestionLabel {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-right: 4px;
+}
+
+.headerGestionSelect {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #bfc9d9;
+    font-size: 1rem;
+    background: #f7faff;
+    min-width: 120px;
+}
+
+.headerGestionInput {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #bfc9d9;
+    font-size: 1rem;
+    background: #f7faff;
+    min-width: 180px;
+}

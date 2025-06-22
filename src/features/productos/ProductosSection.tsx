@@ -6,7 +6,6 @@ import VerRecetaModal from "./ui/VerRecetaModal";
 import Pagination from "../../components/Pagination/Pagination";
 import useProductos from "./hooks/useProductos";
 import type { ArticuloManufacturadoApi } from "../../types/adminTypes";
-import styles from "./ProductosSection.module.css";
 import shared from "../../styles/common/Common.module.css";
 
 export const ProductosSection: React.FC = () => {
@@ -91,7 +90,7 @@ export const ProductosSection: React.FC = () => {
 
     if (loading && productos.length === 0) {
         return (
-            <div className={`${shared.adminContent} ${styles.adminContent}`}>
+            <div className={shared.adminContent}>
                 <div className={shared.adminContentSection}>
                     <div>Cargando productos...</div>
                 </div>
@@ -100,7 +99,7 @@ export const ProductosSection: React.FC = () => {
     }
 
     return (
-        <div className={`${shared.adminContent} ${styles.adminContent}`}>
+        <div className={shared.adminContent}>
             <div className={shared.adminContentSection}>
                 <SearchHeader
                     onNewClick={handleNuevoClick}

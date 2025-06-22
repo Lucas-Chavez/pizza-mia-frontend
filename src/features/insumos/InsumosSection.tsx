@@ -6,7 +6,6 @@ import ReponerStockModal from "./ui/ReponerStockModal";
 import Pagination from "../../components/Pagination/Pagination";
 import useInsumos from "./hooks/useInsumos";
 import type { InsumoApi } from "../../types/adminTypes";
-import styles from "./InsumosSection.module.css";
 import shared from "../../styles/common/Common.module.css";
 
 export const InsumosSection: React.FC = () => {
@@ -103,7 +102,7 @@ export const InsumosSection: React.FC = () => {
 
     if (loading && insumos.length === 0) {
         return (
-            <div className={`${shared.adminContent} ${styles.adminContent}`}>
+            <div className={shared.adminContent}>
                 <div className={shared.adminContentSection}>
                     <div>Cargando insumos...</div>
                 </div>
@@ -112,7 +111,7 @@ export const InsumosSection: React.FC = () => {
     }
 
     return (
-        <div className={`${shared.adminContent} ${styles.adminContent}`}>
+        <div className={shared.adminContent}>
             <div className={shared.adminContentSection}>
                 <SearchHeader
                     onNewClick={handleNuevoClick}

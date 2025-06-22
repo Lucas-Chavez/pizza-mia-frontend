@@ -2,12 +2,6 @@
 Estilos compartidos entre múltiples componentes
 ========================= */
 
-/* Contenedor principal del área de administración */
-.adminContent {
-    width: 100%;
-    padding: 30px 0;
-}
-
 /* Estilos base para inputs */
 .input {
     border-radius: 38px;

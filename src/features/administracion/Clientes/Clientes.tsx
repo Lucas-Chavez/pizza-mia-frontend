@@ -209,7 +209,13 @@ const Clientes: React.FC = () => {
     const columns = [
         { header: "Nombre", key: "nombre" },
         { header: "Apellido", key: "apellido" },
-        { header: "Email", key: "email" },
+        { 
+            header: "Email", 
+            key: "email", 
+            render: (value: any) => (
+                <span className={styles.emailCell}>{value}</span>
+            )
+        },
         { header: "Teléfono", key: "telefono", render: (value: any) => value || "-" },
         ...getGenericColumns({
             onAlta: (row) => {
