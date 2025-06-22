@@ -41,3 +41,28 @@ body {
     right: 0;
     border-top-left-radius: 30px; /* Curvatura más pronunciada */
 }
+
+/* Scrollbar minimalista */
+.admin-content::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+}
+
+.admin-content::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 4px;
+}
+
+.admin-content::-webkit-scrollbar-thumb:hover {
+    background: #b3b3b3;
+}
+
+.admin-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Para Firefox */
+.admin-content {
+    scrollbar-width: thin;
+    scrollbar-color: #cccccc transparent;
+}

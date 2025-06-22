@@ -27,6 +27,11 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Estados para filtros
+    const [fechaInicio, setFechaInicio] = useState("");
+    const [fechaFin, setFechaFin] = useState("");
+    const [estado, setEstado] = useState("");
+
     // Cargar datos iniciales
     useEffect(() => {
         if (autoLoad) {
@@ -66,6 +71,26 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
             setLoading(false);
         }
     };
+
+    
+    // Limpiar filtros de fechas y estado
+    const clearFilters = () => {
+        setFechaInicio("");
+        setFechaFin("");
+        setEstado("");
+    };
+
+    // Filtrar promociones por rango de fechas y estado
+    type PromocionConEstado = PromocionApi & { estado: string };
+    const promocionesFiltradas = (promociones as PromocionConEstado[]).filter(p => {
+        const inicio = fechaInicio ? new Date(fechaInicio) : null;
+        const fin = fechaFin ? new Date(fechaFin) : null;
+        const fechaPromo = new Date(p.fechaInicio);
+        if (inicio && fechaPromo < inicio) return false;
+        if (fin && fechaPromo > fin) return false;
+        if (estado && p.estado !== estado) return false;
+        return true;
+    });
 
     /**
      * Cargar artículos manufacturados activos
@@ -266,6 +291,7 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
 
     return {
         promociones,
+        promocionesFiltradas,
         articulosManufacturados,
         insumos,
         loading,
@@ -279,6 +305,13 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
         refresh,
         loadInitialData,
         clearError,
+        fechaInicio,
+        setFechaInicio,
+        fechaFin,
+        setFechaFin,
+        estado,
+        setEstado,
+        clearFilters,
     };
 };
 

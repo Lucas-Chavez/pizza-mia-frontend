@@ -1,14 +1,41 @@
+
 .sidebar {
-    width: 250px; /* Ancho fijo */
-    height: calc(100vh - 80px); /* Resta el alto del NavBar */
+    width: 250px;
+    height: calc(100vh - 80px);
     background-color: var(--primary-color);
     color: var(--text-color);
     display: flex;
     flex-direction: column;
     padding: 20px;
     box-sizing: border-box;
-    margin-top: 80px; /* Ajusta el margen superior al alto del NavBar */
+    margin-top: 80px;
     position: fixed;
+    overflow-y: auto;
+}
+
+/* Scrollbar minimalista */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #b3b3b3;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Para Firefox */
+.sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: #cccccc transparent;
 }
 
 

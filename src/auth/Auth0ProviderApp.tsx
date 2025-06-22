@@ -1,5 +1,5 @@
 import { AppState, Auth0Provider } from "@auth0/auth0-react";
-import { FC } from "react";
+import { FC, JSX } from "react";
 import { useNavigate } from "react-router";
 
 const VITE_AUTH0_DOMAIN = import.meta.env.VITE_AUTH0_DOMAIN;

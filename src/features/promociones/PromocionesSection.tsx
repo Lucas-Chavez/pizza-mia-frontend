@@ -5,17 +5,24 @@ import usePromociones from "./hooks/usePromociones";
 import type { PromocionApi } from "../../types/adminTypes";
 import styles from "./PromocionesSection.module.css";
 import shared from "../../styles/common/Common.module.css";
-import Button from "../../components/Button/Button";
+import HeaderFilterPromociones from "./ui/HeaderFilterPromociones";
 
 export const PromocionesSection: React.FC = () => {
     const {
-        promociones,
+        promocionesFiltradas,
         articulosManufacturados,
         insumos,
         loading,
         error,
         handleSubmit,
-        clearError
+        clearError,
+        fechaInicio,
+        setFechaInicio,
+        fechaFin,
+        setFechaFin,
+        estado,
+        setEstado,
+        clearFilters,
     } = usePromociones();
 
     // Estados para modales
@@ -56,7 +63,7 @@ export const PromocionesSection: React.FC = () => {
         clearError();
     };
 
-    if (loading && promociones.length === 0) {
+    if (loading && promocionesFiltradas.length === 0) {
         return (
             <div className={`${shared.adminContent} ${styles.adminContent}`}>
                 <div className={shared.adminContentSection}>
@@ -69,14 +76,17 @@ export const PromocionesSection: React.FC = () => {
     return (
         <div className={`${shared.adminContent} ${styles.adminContent}`}>
             <div className={shared.adminContentSection}>
-                <p>Administrador de promociones</p>
-                <div className={styles.buttonConteiner}>
-                    <Button
-                        label="Nuevo +"
-                        onClick={handleNuevoClick}
-                        className={shared.nuevoButton}
-                    />
-                </div>
+                <HeaderFilterPromociones
+                    onNewClick={handleNuevoClick}
+                    title="Administrador de promociones"
+                    fechaInicio={fechaInicio}
+                    fechaFin={fechaFin}
+                    onFechaInicioChange={setFechaInicio}
+                    onFechaFinChange={setFechaFin}
+                    onClearFilters={clearFilters}
+                    estado={estado}
+                    onEstadoChange={setEstado}
+                />
             </div>
 
             {error && (
@@ -87,7 +97,7 @@ export const PromocionesSection: React.FC = () => {
             )}
 
             <PromocionesTable
-                promociones={promociones}
+                promociones={promocionesFiltradas}
                 onEditPromocion={handleEditClick}
             />
 
