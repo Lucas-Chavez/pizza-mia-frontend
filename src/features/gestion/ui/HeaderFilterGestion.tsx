@@ -2,6 +2,7 @@ import React from "react";
 import Button from "../../../components/Button/Button";
 import styles from "../GestionSection.module.css";
 import shared from "../../../styles/common/Common.module.css";
+import { EstadoApi } from "../../../types/adminTypes";
 
 interface HeaderFilterGestionProps {
     title: string;
@@ -12,6 +13,7 @@ interface HeaderFilterGestionProps {
     search: string;
     onSearchChange: (value: string) => void;
     onNewClick: () => void;
+    estados: EstadoApi[]; // Recibir los estados desde el componente padre
 }
 
 export const HeaderFilterGestion: React.FC<HeaderFilterGestionProps> = ({
@@ -23,6 +25,7 @@ export const HeaderFilterGestion: React.FC<HeaderFilterGestionProps> = ({
     search,
     onSearchChange,
     onNewClick,
+    estados
 }) => {
     return (
         <div className={styles.headerGestionContainer}>
@@ -37,10 +40,11 @@ export const HeaderFilterGestion: React.FC<HeaderFilterGestionProps> = ({
                     onChange={e => onEstadoChange(e.target.value)}
                 >
                     <option value="">Todos</option>
-                    <option value="En Preparacion">En Preparación</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="Entregado">Entregado</option>
-                    <option value="En Camino">En Camino</option>
+                    {estados.map(estado => (
+                        <option key={estado.id} value={estado.denominacion}>
+                            {estado.denominacion}
+                        </option>
+                    ))}
                 </select>
                 <select
                     className={styles.headerGestionSelect}
@@ -50,6 +54,7 @@ export const HeaderFilterGestion: React.FC<HeaderFilterGestionProps> = ({
                     <option value={10}>10</option>
                     <option value={15}>15</option>
                     <option value={20}>20</option>
+                    <option value={50}>50</option>
                 </select>
                 <input
                     type="text"

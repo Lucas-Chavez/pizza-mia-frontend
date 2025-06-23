@@ -10,6 +10,8 @@ import {
     ClienteApi,
     PromocionApi,
     EmpleadoApi,
+    PedidoVentaApi,
+    EstadoApi
 } from "../types/adminTypes";
 
 // ================================================================
@@ -513,6 +515,11 @@ export const patchEstadoCliente = async (id: number) => {
 };
 
 // ================================================================
+// ENDPOINTS PARA EMPLEADOS
+// ================================================================
+// Función para obtener el empleado basado en el ID de Auth0
+
+// ================================================================
 // ENDPOINTS PARA PROMOCIONES
 // ================================================================
 
@@ -688,6 +695,70 @@ export const patchEstadoEmpleado = async (id: number) => {
 };
 
 // ================================================================
+// ENDPOINTS PARA PEDIDOS DE VENTA
+// ================================================================
+
+/**
+ * Obtiene una lista paginada de pedidos
+ * @param page - Número de página (default: 0)
+ * @param size - Tamaño de página (default: 10)
+ * @param sort - Campo de ordenamiento (default: "id")
+ * @returns Objeto con contenido paginado e información de paginación
+ */
+export const fetchPedidos = async (
+    page: number = 0,
+    size: number = 10,
+    sort: string = "id"
+): Promise<{
+    content: PedidoVentaApi[];
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    number: number;
+}> => {
+    const response = await interceptorApi.get(`/pedidos?page=${page}&size=${size}&sort=${sort}`);
+    const data = response.data;
+    
+    return {
+        ...data,
+        content: data.content || []
+    };
+};
+
+/**
+ * Obtiene un pedido por su ID
+ * @param id - ID del pedido
+ * @returns Datos del pedido
+ */
+export const fetchPedidoById = async (id: number): Promise<PedidoVentaApi> => {
+    const response = await interceptorApi.get(`/pedidos/${id}`);
+    return response.data;
+};
+
+// ================================================================
+// ENDPOINTS PARA ESTADOS DE PEDIDOS
+// ================================================================
+
+/**
+ * Obtiene todos los estados disponibles
+ * @returns Lista de estados
+ */
+export const fetchEstados = async (): Promise<EstadoApi[]> => {
+    const response = await interceptorApi.get("/estados");
+    return response.data;
+};
+
+/**
+ * Obtiene un estado por su ID
+ * @param id - ID del estado
+ * @returns Datos del estado
+ */
+export const fetchEstadoById = async (id: number): Promise<EstadoApi> => {
+    const response = await interceptorApi.get(`/estados/${id}`);
+    return response.data;
+};
+
+// ================================================================
 // ÍNDICE DE FUNCIONES POR SECCIÓN
 // ================================================================
 
@@ -743,4 +814,12 @@ EMPLEADOS:
 - createEmpleado()            - POST /api/empleados
 - updateEmpleado()            - PUT /api/empleados/{id}
 - patchEstadoEmpleado()       - PATCH /api/empleados/{id}/estado
+
+PEDIDOS DE VENTA:
+- fetchPedidos()             - GET /api/pedidos (paginado)
+- fetchPedidoById()          - GET /api/pedidos/{id}
+
+ESTADOS DE PEDIDOS:
+- fetchEstados()             - GET /api/estados
+- fetchEstadoById()          - GET /api/estados/{id}
 */

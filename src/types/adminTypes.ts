@@ -221,31 +221,96 @@ export type PaisApi = {
 // ================================================================
 
 /**
- * Tipo para representar un pedido
- * @interface PedidoApi
+ * Tipo para representar un estado de pedido
+ * @interface EstadoApi
  */
-export type PedidoApi = {
+export type EstadoApi = {
     id: number;
-    fecha: string;
-    total: number;
-    estado: "PENDIENTE" | "PREPARANDO" | "LISTO" | "ENTREGADO" | "CANCELADO";
-    tipoEntrega: "DELIVERY" | "TAKEAWAY";
-    cliente?: ClienteApi;
-    empleado?: EmpleadoApi;
-    detalles: DetallePedidoApi[];
-    domicilioEntrega?: DomicilioApi;
-    fechaEntrega?: string;
+    denominacion: string;
 };
 
 /**
- * Tipo para representar un detalle de pedido
- * @interface DetallePedidoApi
+ * Enumeración para tipos de envío
  */
-export type DetallePedidoApi = {
+export type TipoEnvio = 'DELIVERY' | 'LOCAL';
+
+/**
+ * Enumeración para tipos de pago
+ */
+export type TipoPago = 'EFECTIVO' | 'MERCADOPAGO';
+
+/**
+ * Tipo para representar un pedido de venta
+ * @interface PedidoVentaApi
+ */
+export type PedidoVentaApi = {
+    id: number;
+    horaEstimadaFinalizacion: string; // LocalDateTime representado como ISO string
+    total?: number;
+    totalCosto?: number;
+    estado: EstadoApi;
+    tipoEnvio: TipoEnvio;
+    tipoPago: TipoPago;
+    detalles: PedidoVentaDetalleApi[];
+    cliente: ClienteApi;
+    empleado: EmpleadoApi;
+};
+
+/**
+ * Tipo para representar un detalle de pedido de venta
+ * @interface PedidoVentaDetalleApi
+ */
+export type PedidoVentaDetalleApi = {
     id: number;
     cantidad: number;
-    subtotal: number;
-    articuloManufacturado: ArticuloManufacturadoApi;
+    subTotal?: number;
+    articuloInsumo?: InsumoApi | null;
+    articuloManufacturado?: ArticuloManufacturadoApi | null;
+    promocion?: PromocionApi | null;
+};
+
+/**
+ * Tipo para crear un nuevo pedido de venta
+ * @interface NuevoPedidoVentaApi
+ */
+export type NuevoPedidoVentaApi = {
+    horaEstimadaFinalizacion: string;
+    tipoEnvio: TipoEnvio;
+    tipoPago: TipoPago;
+    detalles: {
+        cantidad: number;
+        articuloInsumoId?: number;
+        articuloManufacturadoId?: number;
+        promocionId?: number;
+    }[];
+    clienteId: number;
+    empleadoId: number;
+};
+
+/**
+ * Tipo para actualizar un pedido de venta
+ * @interface ActualizarPedidoVentaApi
+ */
+export type ActualizarPedidoVentaApi = {
+    horaEstimadaFinalizacion?: string;
+    estadoId?: number;
+    tipoEnvio?: TipoEnvio;
+    tipoPago?: TipoPago;
+    detalles?: {
+        id?: number;
+        cantidad: number;
+        articuloInsumoId?: number;
+        articuloManufacturadoId?: number;
+        promocionId?: number;
+    }[];
+};
+
+/**
+ * Tipo para cambiar el estado de un pedido
+ * @interface CambioEstadoPedidoApi
+ */
+export type CambioEstadoPedidoApi = {
+    estadoId: number;
 };
 
 // ================================================================

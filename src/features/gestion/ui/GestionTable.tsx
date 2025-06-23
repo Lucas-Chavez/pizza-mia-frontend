@@ -5,97 +5,96 @@ import iconEdit from "../../../assets/icons/icon-edit.svg";
 import iconRecipe from "../../../assets/icons/icon-recipe.svg";
 import shared from "../../../styles/common/Common.module.css";
 import styles from "../GestionSection.module.css";
-
-
-// Type para PedidoDetalle
-export type PedidoDetalle = {
-    id: number;
-    cantidad: number;
-    subTotal?: number;
-    articuloInsumo?: {
-        id: number;
-        denominacion: string;
-        precioVenta: number;
-    };
-    articuloManufacturado?: {
-        id: number;
-        denominacion: string;
-        precioVenta: number;
-    };
-    promocion?: {
-        id: number;
-        descuento: number;
-    };
-};
-
-export type Pedido = {
-    id: number;
-    horaEstimadaFinalizacion: string; // ISO string para fechas
-    total?: number;
-    totalCosto?: number;
-    estado: {
-        id: number;
-        nombre: string;
-    };
-    tipoEnvio: 'DOMICILIO' | 'RETIRO_LOCAL'; // Enum
-    tipoPago: 'EFECTIVO' | 'TARJETA'; // Enum
-    detalles: PedidoDetalle[];
-    cliente: {
-        id: number;
-        nombre: string;
-        apellido: string;
-        email: string;
-    };
-    empleado: {
-        id: number;
-        nombre: string;
-        apellido: string;
-    };
-};
+import { PedidoVentaApi, EstadoApi } from "../../../types/adminTypes";
+import pedidoEstadoService from "../../../services/pedidoEstadoService";
 
 interface GestionTableProps {
-    pedidos: Pedido[];
-    onEdit: (pedido: Pedido) => void;
-    onVerReceta: (pedido: Pedido) => void;
+    pedidos: PedidoVentaApi[];
+    onEdit: (pedido: PedidoVentaApi) => void;
+    onVerReceta: (pedido: PedidoVentaApi) => void;
+    onEstadoChange?: (pedidoId: number, nuevoEstadoId: number, estadoActualId: number) => void;
+    estados: EstadoApi[];
+    userRol: string | null;
 }
 
-const estadoBadge = (estado: string) => {
-    let color = "#999";
-    if (estado === "En Preparacion") color = "#FAAE42";
-    else if (estado === "Pendiente") color = "#D64C4C";
-    else if (estado === "Entregado") color = "#5ACD40";
-    else if (estado === "En Camino") color = "#4A90E2";
-    return (
-        <span
-            className={styles.estadoBadge}
-            style={{ background: color }}
-        >
-            {estado}
-        </span>
-    );
+// Componente para mostrar badge de estado
+const EstadoBadge: React.FC<{
+  denominacion: string;
+  onClick?: () => void;
+}> = ({ denominacion, onClick }) => {
+  let color = "#999";
+  
+  // Asignar colores según el estado
+  switch (denominacion) {
+    case "EN PREPARACION": color = "#FAAE42"; break;
+    case "EN ESPERA": color = "#D64C4C"; break;
+    case "LISTO": color = "#5ACD40"; break;
+    case "EN COCINA": color = "#4A90E2"; break;
+    case "FACTURADO": color = "#8A2BE2"; break;
+    case "CANCELADO": color = "#FF6B6B"; break;
+  }
+  
+  return (
+    <span
+      className={`${styles.estadoBadge} ${onClick ? styles.estadoBadgeClickable : ''}`}
+      style={{ background: color }}
+      onClick={onClick}
+    >
+      {denominacion}
+    </span>
+  );
 };
 
 export const GestionTable: React.FC<GestionTableProps> = ({
     pedidos,
     onEdit,
     onVerReceta,
+    onEstadoChange,
+    estados,
+    userRol
 }) => {
     const [modalIndex, setModalIndex] = useState<number | null>(null);
+    const [estadoModalIndex, setEstadoModalIndex] = useState<number | null>(null);
+    
+    // Verificar si el usuario puede editar un estado específico
+    const puedeEditarEstado = (estadoActual: string): boolean => {
+      const estadosDisponibles = pedidoEstadoService.getEstadosDisponibles(
+        estadoActual, userRol, estados
+      );
+      return estadosDisponibles.length > 0;
+    };
+    
+    // Mostrar/ocultar el modal de estados
+    const handleEstadoClick = (index: number, pedido: PedidoVentaApi) => {
+      if (puedeEditarEstado(pedido.estado.denominacion)) {
+        setEstadoModalIndex(estadoModalIndex === index ? null : index);
+      }
+    };
+    
+    // Manejar cambio de estado
+    const handleEstadoChange = (pedidoId: number, nuevoEstadoId: number, estadoActualId: number) => {
+      if (onEstadoChange) {
+        onEstadoChange(pedidoId, nuevoEstadoId, estadoActualId);
+        setEstadoModalIndex(null); // Cerrar modal
+      }
+    };
+    
+    // Obtener estados disponibles para cambio
+    const getEstadosDisponibles = (estadoActual: string): EstadoApi[] => {
+      return pedidoEstadoService.getEstadosDisponibles(estadoActual, userRol, estados);
+    };
+
+    // Definición de columnas
     const columns = [
-        {
-            header: "Seleccionar",
-            key: "seleccion",
-            render: () => <input type="checkbox" />,
-        },
         {
             header: "ID",
             key: "id",
             render: (value: number) => `#${value}`,
         },
         {
-            header: "Nombre",
+            header: "Cliente",
             key: "cliente",
-            render: (_: any, row: Pedido) => `${row.cliente.nombre} ${row.cliente.apellido}`,
+            render: (_: any, row: PedidoVentaApi) => `${row.cliente.nombre} ${row.cliente.apellido}`,
         },
         {
             header: "Fecha",
@@ -108,17 +107,40 @@ export const GestionTable: React.FC<GestionTableProps> = ({
         {
             header: "Total",
             key: "total",
-            render: (value: number) => `$${value?.toFixed(2)}`,
+            render: (value: number) => `$${value?.toFixed(2) || "0.00"}`,
         },
         {
             header: "Estado",
             key: "estado",
-            render: (_: any, row: Pedido) => estadoBadge(row.estado.nombre),
+            render: (_: any, row: PedidoVentaApi, rowIndex: number) => (
+                <div className={styles.estadoContainer}>
+                    <EstadoBadge 
+                      denominacion={row.estado.denominacion}
+                      onClick={puedeEditarEstado(row.estado.denominacion) 
+                        ? () => handleEstadoClick(rowIndex, row) 
+                        : undefined}
+                    />
+                    
+                    {estadoModalIndex === rowIndex && (
+                        <div className={styles.estadoOptionsModal}>
+                            {getEstadosDisponibles(row.estado.denominacion).map(estado => (
+                                <div 
+                                    key={estado.id}
+                                    className={styles.estadoOption}
+                                    onClick={() => handleEstadoChange(row.id, estado.id, row.estado.id)}
+                                >
+                                    <EstadoBadge denominacion={estado.denominacion} />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ),
         },
         {
             header: "Acciones",
             key: "acciones",
-            render: (_: any, row: Pedido, rowIndex: number) => (
+            render: (_: any, row: PedidoVentaApi, rowIndex: number) => (
                 <div style={{ position: "relative" }}>
                     <button
                         className={shared.actionButton}
@@ -159,11 +181,19 @@ export const GestionTable: React.FC<GestionTableProps> = ({
     ];
 
     return (
-        <GenericTable
-            columns={columns}
-            data={pedidos}
-            className={styles.gestionTableContainer}
-        />
+        <>
+            {pedidos.length === 0 ? (
+                <div className={styles.emptyMessage}>
+                    No hay pedidos para mostrar con los filtros actuales
+                </div>
+            ) : (
+                <GenericTable
+                    columns={columns}
+                    data={pedidos}
+                    className={styles.gestionTableContainer}
+                />
+            )}
+        </>
     );
 };
 
