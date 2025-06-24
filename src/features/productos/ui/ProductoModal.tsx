@@ -265,16 +265,6 @@ export const ProductoModal: React.FC<ProductoModalProps> = ({
                             onChange={e => setFormData({ ...formData, tiempoEstimadoProduccion: e.target.value })}
                             disabled={isLoading}
                         />
-                        {isEditMode && (
-                            <input
-                                className={`${shared.input} ${styles.input}`}
-                                type="number"
-                                placeholder="Precio de venta ($)"
-                                value={formData.precioVenta}
-                                onChange={e => setFormData({ ...formData, precioVenta: e.target.value })}
-                                disabled={isLoading}
-                            />
-                        )}
                         <select
                             className={`${shared.input} ${styles.input}`}
                             value={formData.rubro}
@@ -331,8 +321,24 @@ export const ProductoModal: React.FC<ProductoModalProps> = ({
                                                 <span className={styles.ingredienteNombre}>
                                                     {detalle.articuloInsumo.denominacion}
                                                 </span>
-                                                <span className={styles.ingredienteCantidad}>
-                                                    {detalle.cantidad} {detalle.articuloInsumo.unidadMedida?.toLowerCase()}
+                                                <input
+                                                    className={styles.ingredienteCantidad}
+                                                    type="number"
+                                                    min={1}
+                                                    value={detalle.cantidad}
+                                                    onChange={e => {
+                                                        const nuevosDetalles = [...detalles];
+                                                        nuevosDetalles[index] = {
+                                                            ...nuevosDetalles[index],
+                                                            cantidad: Number(e.target.value)
+                                                        };
+                                                        setDetalles(nuevosDetalles);
+                                                    }}
+                                                    style={{ width: 60, marginLeft: 8 }}
+                                                    disabled={isLoading}
+                                                />
+                                                <span style={{ marginLeft: 4 }}>
+                                                    {detalle.articuloInsumo.unidadMedida?.toLowerCase()}
                                                 </span>
                                             </div>
                                             <button 

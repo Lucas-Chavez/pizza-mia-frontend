@@ -36,7 +36,7 @@ Estilos compartidos entre todos los componentes
 }
 
 .tableContainer {
-    width: 100%;
+    width: 90%;
     overflow-x: auto;
 }
 
@@ -100,7 +100,7 @@ EditarProductoModal.tsx
 .nuevoProductoGrid {
     display: grid;
     grid-template-columns: 1.2fr 1.5fr 0.8fr;
-    gap: 50px;
+    gap: 32px;
     width: 100%;
     margin-bottom: 10px;
 }
@@ -109,7 +109,7 @@ EditarProductoModal.tsx
 .nuevoProductoCol {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     min-width: 0;
 }
 
@@ -117,12 +117,12 @@ EditarProductoModal.tsx
 .nuevoProductoCol:nth-child(3) {
     align-items: center;
     justify-content: flex-start;
-    padding-top: 18px;
+    padding-top: 12px;
 }
 
 /* Contenedor para carga de imágenes */
 .imageUploadContainer {
-    margin-top: 10px;
+    margin-top: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -130,15 +130,15 @@ EditarProductoModal.tsx
 
 /* Área de previsualización de imagen */
 .imagePreviewArea {
-    width: 120px;
-    height: 120px;
-    border: 1px dashed #ccc;
+    width: 90px;
+    height: 90px;
+    border: 1px solid #e0e0e0;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 10px;
-    background-color: #f8f8f8;
-    border-radius: 4px;
+    margin-bottom: 8px;
+    background-color: #fafbfc;
+    border-radius: 6px;
     overflow: hidden;
 }
 
@@ -151,23 +151,23 @@ EditarProductoModal.tsx
 
 /* Placeholder cuando no hay imagen */
 .noImagePlaceholder {
-    color: #999;
-    font-size: 14px;
+    color: #bbb;
+    font-size: 13px;
 }
 
 /* Botón para seleccionar imagen */
 .selectImageButton {
-    padding: 8px 16px;
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    border-radius: 20px;
+    padding: 6px 14px;
+    background-color: #f7f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
     cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
+    font-size: 13px;
+    transition: background 0.2s;
 }
 
 .selectImageButton:hover {
-    background-color: #e0e0e0;
+    background-color: #f0f0f0;
 }
 
 .selectImageButton:disabled {
@@ -177,30 +177,30 @@ EditarProductoModal.tsx
 
 /* Estilos para etiquetas de ingredientes */
 .ingredienteLabel {
-    font-size: 14px;
+    font-size: 13px;
     color: #444;
     margin-bottom: 2px;
-    margin-top: 6px;
+    margin-top: 4px;
     font-weight: 500;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
 }
 
 /* Botón para agregar ingredientes */
 .addIngredienteButton {
     display: flex;
     align-items: center;
-    gap: 6px;
-    background: #f0f0f0;
-    border: 1px solid #d0d0d0;
-    border-radius: 20px;
-    padding: 6px 12px;
+    gap: 4px;
+    background: #f7f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 5px 10px;
     cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
+    font-size: 13px;
+    transition: background 0.2s;
 }
 
 .addIngredienteButton:hover {
-    background: #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: #ededed;
 }
 
 /* Lista de ingredientes */
@@ -208,27 +208,27 @@ EditarProductoModal.tsx
     list-style: none;
     padding: 0;
     margin: 0;
-    min-height: 40px;
+    min-height: 36px;
     max-height: 90px;
     overflow-y: auto;
-    border-radius: 8px;
+    border-radius: 6px;
     background: #fafbfc;
     border: 1px solid #eee;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     transition: box-shadow 0.2s;
 }
 
 .ingredientesList:focus-within,
 .ingredientesList:hover {
-    box-shadow: 0 2px 8px 0 rgba(69,103,182,0.07);
+    box-shadow: 0 1px 4px 0 rgba(69,103,182,0.04);
 }
 
 /* Items de ingredientes */
 .ingredienteItem {
     display: flex;
     justify-content: space-between;
-    padding: 7px 0;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 5px 0;
+    border-bottom: 1px solid #f3f3f3;
 }
 
 .ingredienteItem:last-child {
@@ -239,27 +239,28 @@ EditarProductoModal.tsx
 .ingredienteInfo {
     display: flex;
     align-items: center;
-    padding-left: 12px;
-    gap: 8px;
+    padding-left: 8px;
+    gap: 6px;
 }
 
 /* Nombre del ingrediente */
 .ingredienteNombre {
     font-weight: 500;
-    font-size: 15px;
+    font-size: 14px;
     color: #333;
 }
 
 /* Cantidad del ingrediente */
 .ingredienteCantidad {
-    font-size: 14px;
-    color: #666;
+    font-size: 13px;
+    color: #444;
     background: #f5f5f5;
-    padding: 3px 10px;
-    border-radius: 15px;
-    min-width: 50px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    min-width: 40px;
     text-align: center;
-    margin-top: 2px;
+    border: 1px solid #e0e0e0;
+    margin-top: 0;
 }
 
 /* Botón para eliminar ingrediente */
@@ -267,9 +268,9 @@ EditarProductoModal.tsx
     background: none;
     border: none;
     color: #D64C4C;
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
-    padding: 0 8px;
+    padding: 0 6px;
     transition: color 0.2s;
 }
 
@@ -280,12 +281,22 @@ EditarProductoModal.tsx
 /* Información de costo */
 .costoInfo p {
     margin-top: 4px;
-    font-size: 15px;
+    font-size: 14px;
     color: #333;
-    margin-top: 30px;
+    margin-top: 18px;
     text-align: center;
 }
 
+/* Quitar flechas de los inputs de cantidad en todos los navegadores */
+.ingredienteCantidad::-webkit-outer-spin-button,
+.ingredienteCantidad::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.ingredienteCantidad[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+}
 /* =========================
 VerRecetaModal.tsx
 ========================= */
