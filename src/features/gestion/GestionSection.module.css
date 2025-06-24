@@ -1,6 +1,6 @@
-/*-----------------------
-Tabla de Gestión
-------------------------*/
+/*------------------------------
+GestionTable
+------------------------------*/
 .gestionTableContainer {
     width: 95%;
 }
@@ -49,9 +49,9 @@ Tabla de Gestión
     background: #f5f5f5;
 }
 
-/*-----------------------
-HeaderFilterSection
-------------------------*/
+/*------------------------------
+HeaderFilterGestion
+------------------------------*/
 .headerGestionContainer {
     width: 100%;
     margin-bottom: 24px;
@@ -102,9 +102,16 @@ HeaderFilterSection
     font-size: 1rem;
     background: #f7faff;
     min-width: 180px;
+    margin-left: 20px;
 }
 
-/* Agregar a GestionSection.module.css */
+.headerGestionFiltersRight {
+  margin-top: 2px;
+}
+
+/*------------------------------
+EstadoBadge y EstadoOptions
+------------------------------*/
 .estadoContainer {
     position: relative;
     display: inline-block;
@@ -149,8 +156,9 @@ HeaderFilterSection
     text-align: center;
 }
 
-/* Añadir estos estilos al final del archivo */
-
+/*------------------------------
+Loading, Error y Mensajes Vacíos
+------------------------------*/
 .loadingContainer {
     display: flex;
     justify-content: center;
@@ -189,6 +197,9 @@ HeaderFilterSection
   text-align: center;
 }
 
+/*------------------------------
+Rol Indicator y Estados
+------------------------------*/
 .rolIndicator {
   background-color: #f0f0f0;
   color: #333;
@@ -223,8 +234,9 @@ HeaderFilterSection
   background-color: #FF6B6B;
 }
 
-/* Añadir al final del archivo */
-
+/*------------------------------
+Connection Status
+------------------------------*/
 .connectionStatus {
   padding: 6px 12px;
   border-radius: 4px;
@@ -253,8 +265,9 @@ HeaderFilterSection
   100% { opacity: 1; }
 }
 
-/* Añadir estos estilos al final del archivo */
-
+/*------------------------------
+Animación de Fila Destacada
+------------------------------*/
 .highlightedRow {
   animation: highlight 2s ease-in-out;
 }
@@ -268,9 +281,9 @@ HeaderFilterSection
   }
 }
 
-/* Añadir al final del archivo */
-
-/* Estilos para el modal de detalles de pedido */
+/*------------------------------
+VerPedidoModal
+------------------------------*/
 .verPedidoModalContent {
   background-color: white;
   border-radius: 8px;
@@ -392,4 +405,71 @@ HeaderFilterSection
   border-top: 1px solid #eee;
   text-align: right;
   background-color: #f8f9fa;
+}
+
+/*------------------------------
+Responsive: Mobile
+------------------------------*/
+@media (max-width: 900px) {
+
+    /* GestionTable */
+    .rolesTable {
+        min-width: 600px;
+        width: max-content;
+        font-size: 14px;
+    }
+    .tableHeader,
+    td {
+        font-size: 14px;
+        padding: 8px 6px;
+        white-space: nowrap;
+    }
+
+    /* HeaderFilterGestion */
+    .headerGestionFiltersRow {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0;
+        width: 100%;
+        padding-bottom: 4px;
+    }
+
+    .headerGestionFiltersLeft,
+    .headerGestionFiltersRight {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 48%;
+        min-width: 0;
+    }
+
+    .headerGestionFiltersLeft {
+        align-items: flex-start;
+    }
+
+    .headerGestionFiltersRight {
+        margin-top: 25px;
+        align-items: flex-end;
+    }
+
+    .headerGestionLabel,
+    .headerGestionSelect,
+    .headerGestionInput {
+        font-size: 13px;
+        min-width: 0;
+        width: 100%;
+        max-width: 350px;
+        box-sizing: border-box;
+        text-align: left;
+    }
+
+    .headerGestionInput {
+        min-width: 0;
+        width: 100%;
+        max-width: 350px;
+        margin-left: 0; 
+    }
+
 }

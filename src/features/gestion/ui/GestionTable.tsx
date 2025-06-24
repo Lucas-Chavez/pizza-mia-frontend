@@ -115,8 +115,8 @@ export const GestionTable: React.FC<GestionTableProps> = ({
             render: (_: any, row: PedidoVentaApi, rowIndex: number) => (
                 <div className={styles.estadoContainer}>
                     <EstadoBadge 
-                      denominacion={row.estado.denominacion}
-                      onClick={puedeEditarEstado(row.estado.denominacion) 
+                        denominacion={row.estado.denominacion}
+                        onClick={puedeEditarEstado(row.estado.denominacion) 
                         ? () => handleEstadoClick(rowIndex, row) 
                         : undefined}
                     />
@@ -190,7 +190,7 @@ export const GestionTable: React.FC<GestionTableProps> = ({
                 <GenericTable
                     columns={columns}
                     data={pedidos}
-                    className={styles.gestionTableContainer}
+                    className={`adminContent ${styles.gestionTableContainer}`}
                 />
             )}
         </>

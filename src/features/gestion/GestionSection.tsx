@@ -1,7 +1,7 @@
 import shared from '../../styles/common/Common.module.css';
 import { useState, useEffect, useCallback } from "react";
 import GestionTable from "./ui/GestionTable";
-import HeaderFilterGestion from "./ui/HeaderFilterGestion";
+import { HeaderFilterGestion } from "./ui/HeaderFilterGestion";
 import Pagination from "../../components/Pagination/Pagination";
 import { fetchPedidos, fetchEstados, fetchPedidoById as apiFetchPedidoById } from "../../api/adminApi";
 import axios from 'axios';

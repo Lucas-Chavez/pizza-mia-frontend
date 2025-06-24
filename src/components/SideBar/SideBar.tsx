@@ -3,9 +3,14 @@ import { NavLink } from "react-router-dom";
 import styles from "./SideBar.module.css";
 import { useAuthStore } from "../../store/useAuthStore";
 
-const SideBar: FC = () => {
+interface SideBarProps {
+    open?: boolean;
+    onClose?: () => void;
+}
+
+const SideBar: FC<SideBarProps> = ({ open = false, onClose }) => {
     const { rol } = useAuthStore();
-    
+
     // Función para verificar si el usuario tiene acceso a una sección
     const hasAccess = (allowedRoles: string[]): boolean => {
         if (!rol) return false;
@@ -13,10 +18,22 @@ const SideBar: FC = () => {
     };
 
     return (
-        <aside className={styles.sidebar}>
+        <aside
+            className={`${styles.sidebar} ${open ? styles.open : ""}`}
+            tabIndex={-1}
+            aria-hidden={!open}
+        >
+            {/* Botón cerrar solo en móvil */}
+            <button
+                className={styles.closeButtonMobile}
+                onClick={onClose}
+                aria-label="Cerrar menú"
+                type="button"
+            >
+                ×
+            </button>
             <hr className={styles.divider} />
             <ul className={styles.menuList}>
-                {/* Sección de Administración - Solo para Administradores */}
                 {hasAccess(["Administrador"]) && (
                     <li>
                         <NavLink 
@@ -29,8 +46,6 @@ const SideBar: FC = () => {
                         </NavLink>
                     </li>
                 )}
-                
-                {/* Sección de Rubros - Solo para Administradores */}
                 {hasAccess(["Administrador"]) && (
                     <li>
                         <NavLink 
@@ -43,8 +58,6 @@ const SideBar: FC = () => {
                         </NavLink>
                     </li>
                 )}
-                
-                {/* Sección de Insumos - Para Administradores y Cocineros */}
                 {hasAccess(["Administrador", "Cocinero"]) && (
                     <li>
                         <NavLink 
@@ -57,8 +70,6 @@ const SideBar: FC = () => {
                         </NavLink>
                     </li>
                 )}
-                
-                {/* Sección de Productos - Para Administradores y Cocineros */}
                 {hasAccess(["Administrador", "Cocinero"]) && (
                     <li>
                         <NavLink 
@@ -71,8 +82,6 @@ const SideBar: FC = () => {
                         </NavLink>
                     </li>
                 )}
-                
-                {/* Sección de Promociones - Solo para Administradores */}
                 {hasAccess(["Administrador"]) && (
                     <li>
                         <NavLink 
@@ -85,8 +94,6 @@ const SideBar: FC = () => {
                         </NavLink>
                     </li>
                 )}
-                
-                {/* Sección de Gestión - Para todos los roles */}
                 {hasAccess(["Administrador", "Cajero", "Cocinero"]) && (
                     <li>
                         <NavLink 
@@ -99,8 +106,6 @@ const SideBar: FC = () => {
                         </NavLink>
                     </li>
                 )}
-                
-                {/* Sección de Estadísticas - Solo para Administradores */}
                 {hasAccess(["Administrador"]) && (
                     <li>
                         <NavLink 
@@ -113,8 +118,6 @@ const SideBar: FC = () => {
                         </NavLink>
                     </li>
                 )}
-                
-                {/* Sección de Seguridad - Solo para Administradores */}
                 {hasAccess(["Administrador"]) && (
                     <li>
                         <NavLink 

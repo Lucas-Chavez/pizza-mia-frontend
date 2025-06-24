@@ -1,28 +1,37 @@
+/* ============================
+NavBar - Contenedor principal
+============================ */
 .navbar {
-    position: fixed;
+    position: fixed;           /* Barra fija arriba */
     top: 0;
     left: 0;
     height: 80px;
     width: 100%;
-    background-color: var(--primary-color);
+    background-color: var(--primary-color); /* Color principal */
     display: flex;
     align-items: center;
-    padding: 0 50px;
+    padding: 0 50px;           /* Espaciado horizontal */
     box-sizing: border-box;
-    z-index: 1000;
+    z-index: 1000;             /* Encima del resto */
 }
 
+/* ============================
+NavBar - Contenido interno
+============================ */
 .navContent {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Logo a la izq, usuario a la der */
     align-items: center;
     width: 100%;
 }
 
+/* ============================
+NavBar - Sección del logo y título
+============================ */
 .logoSection {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 10px;                 /* Espacio entre logo y texto */
     margin-left: -10px;
 }
 
@@ -31,35 +40,49 @@
     height: 25px;
 }
 
+/* ============================
+NavBar - Título del dashboard
+============================ */
 .dashboardTitle {
     margin-left: 40px;
     font-size: var(--h4-size);
     color: var(--text-color);
 }
 
+/* ============================
+NavBar - Sección derecha (usuario, avatar, login)
+============================ */
 .rightSection {
     display: flex;
     align-items: center;
     position: relative;
-    gap: 15px;
+    gap: 15px;                 /* Espacio entre saludo y avatar */
 }
 
+/* ============================
+NavBar - Título principal
+============================ */
 .navbar h3 {
     font-size: var(--h3-size);
     color: var(--text-color);
     margin: 0;
 }
 
+/* ============================
+NavBar - Enlaces
+============================ */
 .navbar a {
     color: var(--text-color);
     font-size: var(--button-text-size);
     text-decoration: none;
 }
-
 .navbar a:hover {
     text-decoration: underline;
 }
 
+/* ============================
+NavBar - Avatar de usuario
+============================ */
 .avatar {
     width: 38px;
     height: 38px;
@@ -69,12 +92,14 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
 }
-
 .avatar:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* ============================
+NavBar - Menú desplegable del avatar
+============================ */
 .avatarMenu {
     position: absolute;
     top: 60px;
@@ -87,7 +112,6 @@
     overflow: hidden;
     animation: slideDown 0.2s ease;
 }
-
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -99,17 +123,18 @@
     }
 }
 
+/* ============================
+NavBar - Info de usuario en menú
+============================ */
 .userInfo {
     padding: 16px;
 }
-
 .userName {
     margin: 0 0 4px 0;
     font-weight: 600;
     font-size: 16px;
     color: #333;
 }
-
 .userEmail {
     margin: 0;
     font-size: 14px;
@@ -117,12 +142,18 @@
     word-break: break-all;
 }
 
+/* ============================
+NavBar - Separador en menú
+============================ */
 .menuDivider {
     margin: 0;
     border: none;
     border-top: 1px solid #eee;
 }
 
+/* ============================
+NavBar - Botón cerrar sesión
+============================ */
 .logoutButton {
     width: 100%;
     padding: 12px 16px;
@@ -135,18 +166,28 @@
     cursor: pointer;
     transition: background-color 0.2s;
 }
-
 .logoutButton:hover {
     background-color: #f8f8f8;
 }
 
+/* ============================
+NavBar - Saludo al usuario
+============================ */
 .greeting {
     font-size: 16px;
     color: #444;
     margin-left: 20px;
     font-weight: 400;
 }
+.userGreeting {
+    margin-right: 12px;
+    font-size: 14px;
+    color: #666;
+}
 
+/* ============================
+NavBar - Botón login y autenticación
+============================ */
 .loginButton {
     background-color: #ff6b35;
     color: white;
@@ -157,44 +198,82 @@
     cursor: pointer;
     transition: background-color 0.2s;
 }
-
 .loginButton:hover {
     background-color: #e85a26;
 }
-
-/* Estilos mejorados para el botón de autenticación */
 .authButton {
-  background-color: #ff5c35;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(255, 92, 53, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    background-color: #ff5c35;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(255, 92, 53, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-
 .authButton:hover {
-  background-color: #e64a24;
-  box-shadow: 0 4px 8px rgba(255, 92, 53, 0.3);
-  transform: translateY(-1px);
+    background-color: #e64a24;
+    box-shadow: 0 4px 8px rgba(255, 92, 53, 0.3);
+    transform: translateY(-1px);
 }
-
 .authButton:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(255, 92, 53, 0.2);
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(255, 92, 53, 0.2);
 }
 
-/* Saludo al usuario */
-.userGreeting {
-  margin-right: 12px;
-  font-size: 14px;
-  color: #666;
+/* ============================
+NavBar - Botón menú hamburguesa (mobile)
+============================ */
+.menuButtonMobile {
+    display: none;
+    background: none;
+    border: none;
+    margin-right: 10px;
+    padding: 0;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+}
+.menuButtonMobile img {
+    width: 28px;
+    height: 28px;
 }
 
-/* Ajustes específicos para la sección derecha */
+/* ============================
+NavBar - Responsive (mobile)
+============================ */
+@media (max-width: 900px) {
+    .menuButtonMobile {
+        display: block; /* Mostrar menú hamburguesa */
+    }
+    .dashboardTitle {
+        display: none; /* Ocultar dashboard en mobile */
+    }
+    .logoSection {
+        gap: 4px;
+        margin-left: 0;
+    }
+    .navbar {
+        padding: 0 12px;
+        height: 60px;
+    }
+    .logo {
+        width: 18px;
+        height: 18px;
+    }
+    .navbar h3 {
+        font-size: 26px;
+    }
+    .rightSection {
+        gap: 4px; /* Menor separación entre saludo y avatar */
+    }
+    .userGreeting {
+        margin-right: 2px; /* Menor margen a la derecha */
+        font-size: 12px;   /* Más pequeño en móvil */
+    }
+}

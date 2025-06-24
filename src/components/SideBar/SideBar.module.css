@@ -1,44 +1,49 @@
-
+/* ============================
+SideBar - Contenedor principal
+============================ */
 .sidebar {
-    width: 250px;
-    height: calc(100vh - 80px);
-    background-color: var(--primary-color);
-    color: var(--text-color);
+    width: 250px;                        /* Ancho fijo en desktop */
+    height: calc(100vh - 80px);          /* Altura menos el navbar */
+    background-color: var(--primary-color); /* Color de fondo */
+    color: var(--text-color);            /* Color de texto */
     display: flex;
     flex-direction: column;
     padding: 20px;
     box-sizing: border-box;
-    margin-top: 80px;
-    position: fixed;
-    overflow-y: auto;
+    margin-top: 80px;                    /* Debajo del navbar fijo */
+    position: fixed;                     /* Fijo a la izquierda */
+    overflow-y: auto;                    /* Scroll vertical si es necesario */
 }
 
-/* Scrollbar minimalista */
+/* ============================
+SideBar - Scrollbar minimalista (Webkit)
+============================ */
 .sidebar::-webkit-scrollbar {
     width: 6px;
     background: transparent;
 }
-
 .sidebar::-webkit-scrollbar-thumb {
     background: #cccccc;
     border-radius: 4px;
 }
-
 .sidebar::-webkit-scrollbar-thumb:hover {
     background: #b3b3b3;
 }
-
 .sidebar::-webkit-scrollbar-track {
     background: transparent;
 }
 
-/* Para Firefox */
+/* ============================
+SideBar - Scrollbar minimalista (Firefox)
+============================ */
 .sidebar {
     scrollbar-width: thin;
     scrollbar-color: #cccccc transparent;
 }
 
-
+/* ============================
+SideBar - Separador visual (línea)
+============================ */
 .divider {
     width: 180px;
     margin: -20px auto 24px auto; /* Centrado y con margen inferior */
@@ -49,16 +54,21 @@
     display: absolute;
 }
 
+/* ============================
+SideBar - Lista de navegación
+============================ */
 .menuList {
-    list-style: none;
+    list-style: none;           /* Sin viñetas */
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 20px;                  /* Espacio entre botones */
 }
 
-
+/* ============================
+SideBar - Botón/enlace de menú
+============================ */
 .menuButton {
     width: 100%;
     padding: 12px 15px;
@@ -71,20 +81,65 @@
     cursor: pointer;
     transition: all 0.2s ease;
     display: block;
-    text-decoration: none; /* Elimina el subrayado de enlaces */
+    text-decoration: none;      /* Elimina subrayado de enlaces */
     margin: 0;
     box-sizing: border-box;
 }
-
 .menuButton:hover {
     background-color: #F0F0F0;
 }
-
 .menuButton.selected {
-    background-color: var(--button-color);
+    background-color: var(--button-color); /* Color destacado para la ruta activa */
     color: #FFFFFF;
 }
-
 .menuButton:focus {
     outline: none;
+}
+
+/* ============================
+SideBar - Botón cerrar (solo móvil)
+============================ */
+.closeButtonMobile {
+    display: none;              /* Oculto en desktop */
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #333;
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    z-index: 1101;
+    cursor: pointer;
+}
+
+/* ============================
+SideBar - Responsive (mobile)
+============================ */
+@media (max-width: 900px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 80vw;                /* Más angosto en móvil */
+        max-width: 270px;
+        height: 100vh;
+        margin-top: 0;
+        z-index: 1100;
+        transform: translateX(-100%); /* Oculto por defecto */
+        transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+        box-shadow: 2px 0 16px rgba(0,0,0,0.12);
+        background: var(--primary-color);
+    }
+    .sidebar.open {
+        transform: translateX(0);   /* Visible cuando está abierto */
+    }
+    .closeButtonMobile {
+        display: block;             /* Mostrar botón cerrar en móvil */
+    }
+    .divider {
+        display: none;              /* Oculta el separador en móvil */
+    }
+    .menuList {
+        margin-top: 40px;           /* Espacio extra debajo del botón cerrar */
+    }
 }

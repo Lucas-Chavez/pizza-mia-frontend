@@ -1,13 +1,17 @@
+/* ============================
+GenericTable - Contenedor principal de la tabla
+============================ */
 .tableContainer {
-    width: 90%;
-    margin: 16px auto;
-    overflow-y: auto;
-    overflow-x: hidden;
-    /* Altura máxima para scroll */
-    max-height: 600px;
+    width: 90%;                /* Ancho de la tabla en desktop */
+    margin: 16px auto;         /* Centrada horizontalmente */
+    overflow-y: auto;          /* Scroll vertical si es necesario */
+    overflow-x: hidden;        /* Sin scroll horizontal por defecto */
+    max-height: 600px;         /* Altura máxima para scroll */
 }
 
-/* Scroll personalizado para navegadores webkit */
+/* ============================
+GenericTable - Scroll personalizado para navegadores webkit
+============================ */
 .tableContainer::-webkit-scrollbar {
     width: 4px;
 }
@@ -23,14 +27,20 @@
     background: #4567B6;
 }
 
+/* ============================
+GenericTable - Tabla principal
+============================ */
 .rolesTable {
-    width: 100%;
+    width: 100%;               /* Ocupa todo el contenedor */
     border-collapse: separate;
     border-spacing: 0;
     background-color: transparent;
-    table-layout: fixed;
+    table-layout: fixed;       /* Columnas de ancho fijo */
 }
 
+/* ============================
+GenericTable - Encabezado de la tabla
+============================ */
 .tableHeader {
     font-size: 16px;
     color: var(--text-color);
@@ -39,14 +49,15 @@
     text-align: center;
     border: none;
     padding: 8px 10px;
-    /* Asegura que el header se mantenga visible al hacer scroll */
-    position: sticky;
+    position: sticky;          /* Fijo al hacer scroll */
     top: 0;
     z-index: 2;
-    /* Sombra sutil para separar el header */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03); /* Sombra sutil */
 }
 
+/* ============================
+GenericTable - Celdas de la tabla
+============================ */
 td {
     text-align: center;
     padding: 8px 10px;
@@ -54,6 +65,9 @@ td {
     border-bottom: 1px solid #000000;
 }
 
+/* ============================
+GenericTable - Bordes de filas
+============================ */
 tr:first-child td {
     border-top: none;
 }
@@ -61,6 +75,34 @@ tr:last-child td {
     border-bottom: none;
 }
 
+/* ============================
+GenericTable - Hover en filas
+============================ */
 tr:hover td {
     background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* ============================
+GenericTable - Responsive (mobile)
+============================ */
+@media (max-width: 900px) {
+    .tableContainer {
+        width: 90vw;           /* Ocupa casi todo el ancho de la pantalla */
+        min-width: 90vw;
+        max-width: 90vw;
+        overflow-x: auto;      /* Permite scroll horizontal */
+        padding: 0;
+        margin: 0;
+    }
+    .rolesTable {
+        min-width: 600px;      /* Ancho mínimo para scroll horizontal */
+        width: max-content;    /* Solo lo necesario */
+        font-size: 14px;
+    }
+    .tableHeader,
+    td {
+        font-size: 14px;
+        padding: 8px 8px;
+        white-space: nowrap;   /* Evita saltos de línea en celdas */
+    }
 }
