@@ -22,7 +22,7 @@ const routePermissions = {
     "/admin/insumos": ["Administrador", "Cocinero"],
     "/admin/productos": ["Administrador", "Cocinero"],
     "/admin/promociones": ["Administrador"],
-    "/admin/gestion": ["Administrador", "Cajero", "Cocinero"],
+    "/admin/gestion": ["Cajero", "Cocinero"],
     "/admin/estadisticas": ["Administrador"],
     "/admin/seguridad": ["Administrador"]
 };
@@ -98,7 +98,6 @@ const AdminLayout: React.FC = () => {
             )}
         </div>
     );
-    // ...existing code...
 };
 
 export default AdminLayout;

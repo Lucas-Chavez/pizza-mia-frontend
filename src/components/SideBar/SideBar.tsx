@@ -94,7 +94,7 @@ const SideBar: FC<SideBarProps> = ({ open = false, onClose }) => {
                         </NavLink>
                     </li>
                 )}
-                {hasAccess(["Administrador", "Cajero", "Cocinero"]) && (
+                {hasAccess(["Cajero", "Cocinero"]) && (
                     <li>
                         <NavLink 
                             to="/admin/gestion"
