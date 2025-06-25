@@ -11,7 +11,10 @@ import {
     PromocionApi,
     EmpleadoApi,
     PedidoVentaApi,
-    EstadoApi
+    EstadoApi,
+    BalanceDiarioDTO,
+    ClientePedidosDTO,
+    ProductoVendidoDTO
 } from "../types/adminTypes";
 
 // ================================================================
@@ -759,6 +762,46 @@ export const fetchEstadoById = async (id: number): Promise<EstadoApi> => {
 };
 
 // ================================================================
+// ENDPOINTS PARA ESTADÍSTICAS
+// ================================================================
+
+/**
+ * Obtiene el top N de clientes con más pedidos
+ * @param limite - Número de clientes a obtener (default: 10)
+ * @returns Lista de clientes con más pedidos
+ */
+export const fetchTopClientesPorPedidos = async (limite: number = 10): Promise<ClientePedidosDTO[]> => {
+    const response = await interceptorApi.get(`/estadisticas/clientes/top-pedidos?limite=${limite}`);
+    return response.data;
+};
+
+/**
+ * Obtiene el balance diario para un rango de fechas
+ * @param fechaInicio - Fecha de inicio en formato YYYY-MM-DD
+ * @param fechaFin - Fecha de fin en formato YYYY-MM-DD
+ * @returns Lista de balances diarios para el período
+ */
+export const fetchBalanceDiario = async (
+    fechaInicio: string,
+    fechaFin: string
+): Promise<BalanceDiarioDTO[]> => {
+    const response = await interceptorApi.get(
+        `/estadisticas/balance-diario?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
+    );
+    return response.data;
+};
+
+/**
+ * Obtiene el top N de productos más vendidos
+ * @param limite - Número de productos a obtener (default: 10)
+ * @returns Lista de productos más vendidos
+ */
+export const fetchTopProductosVendidos = async (limite: number = 10): Promise<ProductoVendidoDTO[]> => {
+    const response = await interceptorApi.get(`/estadisticas/productos/mas-vendidos?limite=${limite}`);
+    return response.data;
+};
+
+// ================================================================
 // ÍNDICE DE FUNCIONES POR SECCIÓN
 // ================================================================
 
@@ -822,4 +865,9 @@ PEDIDOS DE VENTA:
 ESTADOS DE PEDIDOS:
 - fetchEstados()             - GET /api/estados
 - fetchEstadoById()          - GET /api/estados/{id}
+
+ESTADÍSTICAS:
+- fetchTopClientesPorPedidos()  - GET /api/estadisticas/clientes/top-pedidos
+- fetchBalanceDiario()          - GET /api/estadisticas/balance-diario
+- fetchTopProductosVendidos()   - GET /api/estadisticas/productos/mas-vendidos
 */

@@ -1,19 +1,39 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import styles from './EstadisticasSection.module.css';
 import { EstadisticasCharts } from './EstadisticasCharts';
 import { exportEstadisticasToExcel } from './EstadisticasExportExcel';
+import { ClientePedidosDTO, ProductoVendidoDTO } from '../../types/adminTypes';
 
 export const EstadisticasSection: React.FC = () => {
     const balanceRef = useRef<HTMLDivElement>(null);
     const topProductosRef = useRef<HTMLDivElement>(null);
     const topClientesRef = useRef<HTMLDivElement>(null);
+    
+    // Estados para almacenar los datos para exportación
+    const [balanceData, setBalanceData] = useState<any>(null);
+    const [topProductos, setTopProductos] = useState<(ProductoVendidoDTO & { popularidad: number })[]>([]);
+    const [topClientes, setTopClientes] = useState<ClientePedidosDTO[]>([]);
 
     const handleExportToExcel = () => {
         exportEstadisticasToExcel(
             balanceRef.current,
             topProductosRef.current,
-            topClientesRef.current
+            topClientesRef.current,
+            balanceData,
+            topProductos,
+            topClientes
         );
+    };
+
+    // Función para recibir datos de EstadisticasCharts
+    const handleDataUpdate = (
+        newBalanceData: any,
+        newTopProductos: (ProductoVendidoDTO & { popularidad: number })[],
+        newTopClientes: ClientePedidosDTO[]
+    ) => {
+        setBalanceData(newBalanceData);
+        setTopProductos(newTopProductos);
+        setTopClientes(newTopClientes);
     };
 
     return (
@@ -22,6 +42,7 @@ export const EstadisticasSection: React.FC = () => {
                 balanceRef={balanceRef}
                 topProductosRef={topProductosRef}
                 topClientesRef={topClientesRef}
+                onDataUpdate={handleDataUpdate}
             />
             <button
                 className={styles.exportButton}

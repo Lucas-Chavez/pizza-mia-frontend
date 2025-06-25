@@ -1,12 +1,15 @@
 import ExcelJS from "exceljs";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
-import { balanceData, topProductos, topClientes } from "./EstadisticasCharts";
+import {  ClientePedidosDTO, ProductoVendidoDTO } from "../../types/adminTypes";
 
 export async function exportEstadisticasToExcel(
     balanceRef: HTMLDivElement | null,
     topProductosRef: HTMLDivElement | null,
-    topClientesRef: HTMLDivElement | null
+    topClientesRef: HTMLDivElement | null,
+    balanceData: any,
+    topProductos: (ProductoVendidoDTO & { popularidad: number })[],
+    topClientes: ClientePedidosDTO[]
 ) {
     try {
         // Helper para capturar imagen de un nodo
@@ -26,26 +29,36 @@ export async function exportEstadisticasToExcel(
         // 1. BALANCE SEMANAL
         const sheetBalance = workbook.addWorksheet('Balance Semanal');
         sheetBalance.addRow(['Día', 'Ingresos', 'Gastos', 'Balance Neto']);
-        balanceData.labels.forEach((dia: string, i: number) => {
+        
+        if (balanceData && balanceData.labels) {
+            balanceData.labels.forEach((dia: string, i: number) => {
+                sheetBalance.addRow([
+                    dia,
+                    balanceData.datasets[0].data[i],
+                    balanceData.datasets[1].data[i],
+                    balanceData.datasets[0].data[i] - balanceData.datasets[1].data[i]
+                ]);
+            });
+            
             sheetBalance.addRow([
-                dia,
-                balanceData.datasets[0].data[i],
-                balanceData.datasets[1].data[i],
-                balanceData.datasets[0].data[i] - balanceData.datasets[1].data[i]
+                'TOTAL',
+                balanceData.datasets[0].data.reduce((a: number, b: number) => a + b, 0),
+                balanceData.datasets[1].data.reduce((a: number, b: number) => a + b, 0),
+                balanceData.datasets[0].data.reduce((a: number, b: number) => a + b, 0) - 
+                balanceData.datasets[1].data.reduce((a: number, b: number) => a + b, 0)
             ]);
-        });
-        sheetBalance.addRow([
-            'TOTAL',
-            balanceData.datasets[0].data.reduce((a: number, b: number) => a + b, 0),
-            balanceData.datasets[1].data.reduce((a: number, b: number) => a + b, 0),
-            balanceData.datasets[0].data.reduce((a: number, b: number) => a + b, 0) - balanceData.datasets[1].data.reduce((a: number, b: number) => a + b, 0)
-        ]);
+        } else {
+            sheetBalance.addRow(['No hay datos disponibles']);
+        }
+        
         sheetBalance.columns = [
             { width: 20 }, { width: 20 }, { width: 20 }, { width: 20 }
         ];
+        
         sheetBalance.eachRow((row) => {
             row.alignment = { vertical: 'middle', horizontal: 'center' };
         });
+        
         const balanceImg = await getImageFromNode(balanceRef);
         if (balanceImg) {
             const imgId = workbook.addImage({
@@ -60,16 +73,32 @@ export async function exportEstadisticasToExcel(
 
         // 2. TOP PRODUCTOS
         const sheetProductos = workbook.addWorksheet('Top Productos');
-        sheetProductos.addRow(['#', 'Nombre', 'Popularidad', 'Ventas']);
-        topProductos.forEach((p) => {
-            sheetProductos.addRow([p.id, p.nombre, p.popularidad, p.ventas]);
-        });
+        sheetProductos.addRow(['#', 'Nombre', 'Categoría', 'Tipo', 'Cantidad', 'Ventas ($)', 'Popularidad']);
+        
+        if (topProductos && topProductos.length > 0) {
+            topProductos.forEach((p, index) => {
+                sheetProductos.addRow([
+                    index + 1, 
+                    p.denominacion, 
+                    p.rubroDenominacion,
+                    p.tipo === 'MANUFACTURADO' ? 'Producto' : 'Insumo',
+                    p.cantidadVendida, 
+                    p.totalVentas,
+                    `${p.popularidad}%`
+                ]);
+            });
+        } else {
+            sheetProductos.addRow(['No hay datos disponibles']);
+        }
+        
         sheetProductos.columns = [
-            { width: 10 }, { width: 30 }, { width: 20 }, { width: 15 }
+            { width: 10 }, { width: 30 }, { width: 20 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
         ];
+        
         sheetProductos.eachRow((row) => {
             row.alignment = { vertical: 'middle', horizontal: 'center' };
         });
+        
         const productosImg = await getImageFromNode(topProductosRef);
         if (productosImg) {
             const imgId = workbook.addImage({
@@ -77,23 +106,36 @@ export async function exportEstadisticasToExcel(
                 extension: 'png'
             });
             sheetProductos.addImage(imgId, {
-                tl: { col: 5, row: 1 },
+                tl: { col: 7, row: 1 },
                 ext: { width: productosImg.width, height: productosImg.height }
             });
         }
 
         // 3. TOP CLIENTES
         const sheetClientes = workbook.addWorksheet('Top Clientes');
-        sheetClientes.addRow(['#', 'Nombre', 'Compras']);
-        topClientes.forEach((c) => {
-            sheetClientes.addRow([c.id, c.nombre, c.compras]);
-        });
+        sheetClientes.addRow(['#', 'Nombre', 'Email', 'Pedidos']);
+        
+        if (topClientes && topClientes.length > 0) {
+            topClientes.forEach((c, index) => {
+                sheetClientes.addRow([
+                    index + 1, 
+                    c.nombreCompleto, 
+                    c.email, 
+                    c.cantidadPedidos
+                ]);
+            });
+        } else {
+            sheetClientes.addRow(['No hay datos disponibles']);
+        }
+        
         sheetClientes.columns = [
-            { width: 10 }, { width: 30 }, { width: 15 }
+            { width: 10 }, { width: 30 }, { width: 30 }, { width: 15 }
         ];
+        
         sheetClientes.eachRow((row) => {
             row.alignment = { vertical: 'middle', horizontal: 'center' };
         });
+        
         const clientesImg = await getImageFromNode(topClientesRef);
         if (clientesImg) {
             const imgId = workbook.addImage({

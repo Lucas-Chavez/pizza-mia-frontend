@@ -402,38 +402,38 @@ export type NuevoProductoForm = {
 // ================================================================
 
 /**
- * Tipo para estadísticas de productos más vendidos
- * @interface TopProductoStats
+ * Tipo para estadísticas de clientes y sus pedidos
+ * @interface ClientePedidosDTO
  */
-export type TopProductoStats = {
-    id: number;
-    nombre: string;
+export type ClientePedidosDTO = {
+    clienteId: number;
+    nombreCompleto: string;
+    email: string;
+    cantidadPedidos: number;
+};
+
+/**
+ * Tipo para estadísticas de balance diario
+ * @interface BalanceDiarioDTO
+ */
+export type BalanceDiarioDTO = {
+    fecha: string;            // Fecha en formato ISO o similar (LocalDate en Java)
+    ingresos: number;
+    gastos: number;
+    balance: number;
+};
+
+/**
+ * Tipo para estadísticas de productos vendidos
+ * @interface ProductoVendidoDTO
+ */
+export type ProductoVendidoDTO = {
+    productoId: number;
+    tipo: "MANUFACTURADO" | "INSUMO";
+    denominacion: string;
+    rubroDenominacion: string;
     cantidadVendida: number;
-    popularidad: number; // Porcentaje de 0-100
-    ingresos: number;
-};
-
-/**
- * Tipo para estadísticas de ventas por período
- * @interface VentasStats
- */
-export type VentasStats = {
-    fecha: string;
-    cantidad: number;
-    ingresos: number;
-};
-
-/**
- * Tipo para estadísticas de stock
- * @interface StockStats
- */
-export type StockStats = {
-    total: number;
-    sinStock: number;
-    stockBajo: number;
-    stockNormal: number;
-    porcentajeSinStock: number;
-    porcentajeStockBajo: number;
+    totalVentas: number;
 };
 
 // ================================================================
