@@ -24,15 +24,17 @@ const EstadoBadge: React.FC<{
 }> = ({ denominacion, onClick }) => {
   let color = "#999";
   
-  // Asignar colores según el estado
-  switch (denominacion) {
-    case "EN PREPARACION": color = "#FAAE42"; break;
-    case "EN ESPERA": color = "#D64C4C"; break;
-    case "LISTO": color = "#5ACD40"; break;
-    case "EN COCINA": color = "#4A90E2"; break;
-    case "FACTURADO": color = "#8A2BE2"; break;
-    case "CANCELADO": color = "#FF6B6B"; break;
-  }
+    // Asignar colores según el estado
+    switch (denominacion) {
+        case "EN PREPARACION": color = "#FAAE42"; break;
+        case "EN ESPERA": color = "#D64C4C"; break;
+        case "LISTO": color = "#5ACD40"; break;
+        case "EN COCINA": color = "#4A90E2"; break;
+        case "FACTURADO": color = "#8A2BE2"; break;
+        case "CANCELADO": color = "#FF6B6B"; break;
+        case "EN DELIVERY": color = "#FF9800"; break;  // Naranja para en delivery
+        case "ENTREGADO": color = "#009688"; break;    // Verde azulado para entregado
+    }
   
   return (
     <span

@@ -196,9 +196,9 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
     };
 
     /**
-     * Crear una nueva promoción
+     * Crear una nueva promoción (actualizada para manejar imágenes)
      */
-    const createNewPromocion = async (promocionData: any): Promise<boolean> => {
+    const createNewPromocion = async (promocionData: any, imageFile?: File): Promise<boolean> => {
         try {
             setLoading(true);
             
@@ -209,6 +209,7 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
             const detallesFormateados = formatearDetallesParaAPI(promocionData.detalles);
 
             const promocionFinal = {
+                denominacion: promocionData.denominacion, // Nuevo campo
                 fechaInicio: promocionData.fechaInicio,
                 fechaFin: promocionData.fechaFin,
                 descuento: Number(promocionData.descuento),
@@ -216,7 +217,7 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
                 detalles: detallesFormateados
             };
 
-            await createPromocion(promocionFinal);
+            await createPromocion(promocionFinal, imageFile);
             await loadPromociones(); // Recargar la lista
             setError(null);
             return true;
@@ -230,9 +231,9 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
     };
 
     /**
-     * Actualizar una promoción existente
+     * Actualizar una promoción existente (actualizada para manejar imágenes)
      */
-    const updateExistingPromocion = async (id: number, promocionData: any): Promise<boolean> => {
+    const updateExistingPromocion = async (id: number, promocionData: any, imageFile?: File): Promise<boolean> => {
         try {
             setLoading(true);
             
@@ -243,14 +244,17 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
             const detallesFormateados = formatearDetallesParaAPI(promocionData.detalles);
 
             const promocionFinal = {
+                denominacion: promocionData.denominacion, // Nuevo campo
                 fechaInicio: promocionData.fechaInicio,
                 fechaFin: promocionData.fechaFin,
                 descuento: Number(promocionData.descuento),
                 precio: Number(precioCalculado.toFixed(2)),
-                detalles: detallesFormateados
+                detalles: detallesFormateados,
+                // Mantener la imagen existente si no se proporciona una nueva
+                imagen: promocionData.imagen
             };
 
-            await updatePromocion(id, promocionFinal);
+            await updatePromocion(id, promocionFinal, imageFile);
             await loadPromociones(); // Recargar la lista
             setError(null);
             return true;
@@ -264,16 +268,17 @@ export const usePromociones = (options: UsePromocionesOptions = {}) => {
     };
 
     /**
-     * Manejar el envío de formulario (crear o editar)
+     * Manejar el envío de formulario (crear o editar) - ACTUALIZADA
      */
     const handleSubmit = async (
         id: number | null, 
-        promocionData: any
+        promocionData: any,
+        imageFile?: File
     ): Promise<boolean> => {
         if (id === null) {
-            return await createNewPromocion(promocionData);
+            return await createNewPromocion(promocionData, imageFile);
         } else {
-            return await updateExistingPromocion(id, promocionData);
+            return await updateExistingPromocion(id, promocionData, imageFile);
         }
     };
 

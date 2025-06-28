@@ -12,7 +12,6 @@ import { InsumosSection } from "../features/insumos/InsumosSection";
 import { ProductosSection } from "../features/productos/ProductosSection";
 import { GestionSection }  from "../features/gestion/GestionSection";
 import { EstadisticasSection } from "../features/estadisticas/EstadisticasSection";
-import { SeguridadSection } from "../features/seguridad/SeguridadSection";
 import { PromocionesSection } from "../features/promociones/PromocionesSection";
 
 // Definir los permisos de acceso para cada ruta
@@ -22,9 +21,8 @@ const routePermissions = {
     "/admin/insumos": ["Administrador", "Cocinero"],
     "/admin/productos": ["Administrador", "Cocinero"],
     "/admin/promociones": ["Administrador"],
-    "/admin/gestion": ["Cajero", "Cocinero"],
+    "/admin/gestion": ["Cajero", "Cocinero", "Delivery"],
     "/admin/estadisticas": ["Administrador"],
-    "/admin/seguridad": ["Administrador"]
 };
 
 const AdminLayout: React.FC = () => {
@@ -63,11 +61,9 @@ const AdminLayout: React.FC = () => {
         if (pathname.startsWith("/admin/promociones")) return <PromocionesSection />;
         if (pathname.startsWith("/admin/gestion")) return <GestionSection />;
         if (pathname.startsWith("/admin/estadisticas")) return <EstadisticasSection />;
-        if (pathname.startsWith("/admin/seguridad")) return <SeguridadSection />;
         return <GestionSection />;
     };
 
-    // ...existing code...
     return (
         <div className="admin-page">
             <NavBar 

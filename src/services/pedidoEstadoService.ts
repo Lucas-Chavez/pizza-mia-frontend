@@ -163,12 +163,16 @@ class PedidoEstadoService {
     switch (rol.toUpperCase()) {
       case 'CAJERO':
         return (estadoActual === 'EN ESPERA' && nuevoEstado === 'EN COCINA') ||
-               (estadoActual === 'LISTO' && nuevoEstado === 'FACTURADO');
+               (estadoActual === 'LISTO' && (nuevoEstado === 'FACTURADO' || nuevoEstado === 'EN DELIVERY')) ||
+               (estadoActual === 'ENTREGADO' && nuevoEstado === 'FACTURADO');
       
       case 'COCINERO':
         return (estadoActual === 'EN COCINA' && nuevoEstado === 'EN PREPARACION') ||
                (estadoActual === 'EN PREPARACION' && nuevoEstado === 'LISTO');
-      
+
+      case 'DELIVERY':
+        return (estadoActual === 'EN DELIVERY' && nuevoEstado === 'ENTREGADO');
+
       default:
         return false;
     }
@@ -187,6 +191,8 @@ class PedidoEstadoService {
         if (estadoActual === 'EN ESPERA') {
           return todosLosEstados.filter(e => e.denominacion === 'EN COCINA');
         } else if (estadoActual === 'LISTO') {
+          return todosLosEstados.filter(e => e.denominacion === 'FACTURADO' || e.denominacion === 'EN DELIVERY');
+        } else if (estadoActual === 'ENTREGADO') {
           return todosLosEstados.filter(e => e.denominacion === 'FACTURADO');
         }
         break;
@@ -198,6 +204,13 @@ class PedidoEstadoService {
           return todosLosEstados.filter(e => e.denominacion === 'LISTO');
         }
         break;
+
+      case 'DELIVERY':
+      // El delivery puede cambiar el estado de EN DELIVERY a ENTREGADO
+      if (estadoActual === 'EN DELIVERY') {
+        return todosLosEstados.filter(e => e.denominacion === 'ENTREGADO');
+      }
+      break;
     }
     
     return [];
@@ -209,15 +222,18 @@ class PedidoEstadoService {
     
     // Admin puede ver todos los estados
     if (rol.toUpperCase() === 'ADMIN') {
-      return ['EN ESPERA', 'EN COCINA', 'EN PREPARACION', 'LISTO', 'FACTURADO'];
+      return ['EN ESPERA', 'EN COCINA', 'EN PREPARACION', 'LISTO', 'FACTURADO', 'EN DELIVERY', 'ENTREGADO'];
     }
     
     switch (rol.toUpperCase()) {
       case 'CAJERO':
-        return ['EN ESPERA', 'LISTO', 'FACTURADO'];
+        return ['EN ESPERA', 'LISTO', 'ENTREGADO', 'FACTURADO'];
       
       case 'COCINERO':
         return ['EN COCINA', 'EN PREPARACION'];
+
+      case 'DELIVERY':
+      return ['EN DELIVERY', 'ENTREGADO'];
       
       default:
         return [];

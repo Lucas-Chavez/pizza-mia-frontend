@@ -556,26 +556,81 @@ export const fetchPromocionesActivas = async (): Promise<PromocionApi[]> => {
 
 
 /**
- * Crea una nueva promoción
+ * Crea una nueva promoción con soporte para imagen
  * @param promocionData - Datos de la promoción a crear
+ * @param imageFile - Archivo de imagen opcional
  * @returns Datos de la promoción creada
  */
-export const createPromocion = async (promocionData: Omit<PromocionApi, "id">): Promise<PromocionApi> => {
-    const response = await interceptorApi.post("/promociones", promocionData);
+export const createPromocion = async (
+    promocionData: {
+        denominacion: string;
+        fechaInicio: string;
+        fechaFin: string;
+        descuento: number;
+        precio?: number;
+        detalles: any[];
+    }, 
+    imageFile?: File
+): Promise<PromocionApi> => {
+    const formData = new FormData();
+    
+    // Agregar el JSON de la promoción
+    formData.append("promocion", new Blob([JSON.stringify(promocionData)], {
+        type: 'application/json'
+    }));
+    
+    // Agregar el archivo si existe
+    if (imageFile) {
+        formData.append("file", imageFile);
+    }
+    
+    const response = await interceptorApi.post("/promociones", formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    
     return response.data;
 };
 
 /**
- * Actualiza una promoción existente
+ * Actualiza una promoción existente con soporte para imagen
  * @param id - ID de la promoción a actualizar
  * @param promocionData - Nuevos datos de la promoción
+ * @param imageFile - Archivo de imagen opcional
  * @returns Datos de la promoción actualizada
  */
 export const updatePromocion = async (
     id: number,
-    promocionData: Omit<PromocionApi, "id">
+    promocionData: {
+        denominacion: string;
+        fechaInicio: string;
+        fechaFin: string;
+        descuento: number;
+        precio?: number;
+        detalles: any[];
+        imagen?: { id?: number; urlImagen: string };
+    },
+    imageFile?: File
 ): Promise<PromocionApi> => {
-    const response = await interceptorApi.put(`/promociones/${id}`, promocionData);
+    const formData = new FormData();
+    
+    // Agregar el JSON de la promoción
+    formData.append("promocion", new Blob([JSON.stringify(promocionData)], {
+        type: 'application/json'
+    }));
+    
+    // Agregar el archivo si existe
+    if (imageFile) {
+        formData.append("file", imageFile);
+    }
+    
+    const response = await interceptorApi.put(`/promociones/${id}`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    
     return response.data;
 };
 

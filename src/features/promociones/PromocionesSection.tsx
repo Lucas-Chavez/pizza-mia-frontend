@@ -29,9 +29,10 @@ export const PromocionesSection: React.FC = () => {
     const [showPromocionModal, setShowPromocionModal] = useState(false);
     const [promocionToEdit, setPromocionToEdit] = useState<PromocionApi | null>(null);
 
-    const handlePromocionSubmit = async (id: number | null, promocionData: any) => {
+    // Actualizar la función handlePromocionSubmit para incluir el archivo de imagen
+    const handlePromocionSubmit = async (id: number | null, promocionData: any, imageFile?: File) => {
         try {
-            const success = await handleSubmit(id, promocionData);
+            const success = await handleSubmit(id, promocionData, imageFile);
             if (success) {
                 setShowPromocionModal(false);
                 setPromocionToEdit(null);

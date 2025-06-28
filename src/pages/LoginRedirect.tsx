@@ -5,7 +5,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { useShallow } from "zustand/shallow";
 
 const VITE_AUTH0_AUDIENCE = import.meta.env.VITE_AUTH0_AUDIENCE;
-const ALLOWED_ROLES = ["Administrador", "Cajero", "Cocinero"]; // Definir roles permitidos
+const ALLOWED_ROLES = ["Administrador", "Cajero", "Cocinero", "Delivery"]; // Definir roles permitidos
 
 export const LoginRedirect = () => {
   const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
@@ -43,6 +43,9 @@ export const LoginRedirect = () => {
           navigate("/admin/gestion"); // Redirigir a la sección de insumos
         } else if (rol === "Cocinero") {
           navigate("/admin/gestion"); // Redirigir a la sección de productos
+        }
+        else if (rol === "Delivery") {
+          navigate("/admin/gestion"); // Redirigir a la sección de promociones
         }
         else if (rol === "Administrador"){
           navigate("/admin/administracion/roles"); 

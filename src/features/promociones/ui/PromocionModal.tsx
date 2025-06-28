@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PromocionApi, ArticuloManufacturadoApi, InsumoApi } from "../../../types/adminTypes";
 import styles from "../PromocionesSection.module.css";
 import shared from "../../../styles/common/Common.module.css";
@@ -6,7 +6,7 @@ import shared from "../../../styles/common/Common.module.css";
 interface PromocionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (id: number | null, promocionData: any) => Promise<void>;
+    onSubmit: (id: number | null, promocionData: any, imageFile?: File) => Promise<void>;
     promocion?: PromocionApi | null;
     articulosManufacturados: ArticuloManufacturadoApi[];
     insumos: InsumoApi[];
@@ -25,6 +25,10 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
     const [formData, setFormData] = useState<any>(null);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     // Inicializar formulario cuando se abre el modal
     useEffect(() => {
@@ -32,9 +36,11 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
             if (isEditMode && promocion) {
                 // Modo edición - cargar datos de la promoción
                 setFormData({
+                    denominacion: promocion.denominacion || "",
                     fechaInicio: promocion.fechaInicio.split('T')[0], // Formato YYYY-MM-DD para input date
                     fechaFin: promocion.fechaFin.split('T')[0],
                     descuento: promocion.descuento,
+                    imagen: promocion.imagen || null,
                     detalles: promocion.detalles.map(detalle => {
                         // Determinar el tipo basado en cuál objeto tiene ID válido
                         if (detalle.articuloManufacturado && detalle.articuloManufacturado.id > 0) {
@@ -61,18 +67,44 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
                         };
                     })
                 });
+
+                // Si hay imagen, mostrarla en el preview
+                if (promocion.imagen?.urlImagen) {
+                    setPreviewUrl(promocion.imagen.urlImagen);
+                } else {
+                    setPreviewUrl(null);
+                }
             } else {
                 // Modo creación - formulario vacío
                 setFormData({
+                    denominacion: "",
                     fechaInicio: "",
                     fechaFin: "",
                     descuento: "",
+                    imagen: null,
                     detalles: []
                 });
+                setPreviewUrl(null);
             }
+            
+            setSelectedFile(null);
             setError("");
         }
     }, [isOpen, isEditMode, promocion]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedFile(file);
+
+            // Crear preview de la imagen
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewUrl(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleAddDetalle = () => {
         setFormData({
@@ -144,6 +176,10 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
     
     const handleSubmit = async () => {
         // Validaciones básicas
+        if (!formData.denominacion.trim()) {
+            setError("El nombre de la promoción es obligatorio");
+            return;
+        }
         if (!formData.fechaInicio) {
             setError("La fecha de inicio es obligatoria");
             return;
@@ -173,7 +209,6 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
             const dd = String(hoy.getDate()).padStart(2, '0');
             const hoyStr = `${yyyy}-${mm}-${dd}`;
 
-            // formData.fechaInicio ya está en formato YYYY-MM-DD
             if (formData.fechaInicio < hoyStr) {
                 setError("La fecha de inicio no puede ser anterior a hoy");
                 return;
@@ -192,14 +227,6 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
                 setError(`Debe seleccionar un insumo en la fila ${i + 1}`);
                 return;
             }
-            if (detalle.tipo === 'producto' && detalle.articuloInsumoId) {
-                setError(`No puede tener ambos tipos de artículo en la fila ${i + 1}`);
-                return;
-            }
-            if (detalle.tipo === 'insumo' && detalle.articuloManufacturadoId) {
-                setError(`No puede tener ambos tipos de artículo en la fila ${i + 1}`);
-                return;
-            }
             if (!detalle.cantidad || detalle.cantidad <= 0) {
                 setError(`La cantidad debe ser mayor a 0 en la fila ${i + 1}`);
                 return;
@@ -208,16 +235,38 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
 
         setIsLoading(true);
         try {
-            const promocionData = {
-                fechaInicio: formData.fechaInicio,
-                fechaFin: formData.fechaFin,
-                descuento: Number(formData.descuento),
-                detalles: formData.detalles
-            };
+            let promocionData;
+            
+            if (isEditMode) {
+                // Estructura para edición
+                promocionData = {
+                    denominacion: formData.denominacion,
+                    fechaInicio: formData.fechaInicio,
+                    fechaFin: formData.fechaFin,
+                    descuento: Number(formData.descuento),
+                    precio: calcularPrecioTotal(),
+                    detalles: formData.detalles,
+                    // Mantener la imagen existente solo si no se seleccionó una nueva
+                    imagen: !selectedFile && formData.imagen?.id ? {
+                        id: formData.imagen.id,
+                        urlImagen: formData.imagen.urlImagen
+                    } : undefined
+                };
+            } else {
+                // Estructura para creación
+                promocionData = {
+                    denominacion: formData.denominacion,
+                    fechaInicio: formData.fechaInicio,
+                    fechaFin: formData.fechaFin,
+                    descuento: Number(formData.descuento),
+                    precio: calcularPrecioTotal(),
+                    detalles: formData.detalles
+                };
+            }
             
             console.log("📋 Datos del formulario antes de enviar:", JSON.stringify(promocionData, null, 2));
             
-            await onSubmit(isEditMode ? promocion!.id : null, promocionData);
+            await onSubmit(isEditMode ? promocion!.id : null, promocionData, selectedFile || undefined);
             onClose();
         } catch (err) {
             console.error("Error en el modal:", err);
@@ -226,7 +275,6 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
             setIsLoading(false);
         }
     };
-
 
     const handleClose = () => {
         setError("");
@@ -239,12 +287,22 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
 
     return (
         <div className={shared.modalOverlay}>
-            <div className={`${shared.modalContent} ${styles.modalContent}`} style={{ minWidth: 900, maxWidth: 1100 }}>
+            <div className={`${shared.modalContent} ${styles.modalContent}`} style={{ minWidth: 1000, maxWidth: 1200 }}>
                 <h2>{isEditMode ? 'Editar Promoción' : 'Nueva Promoción'}</h2>
                 
                 <div style={{ display: "flex", gap: 24, width: "100%" }}>
                     {/* Columna 1: Datos básicos */}
                     <div className={styles.editarModalCol}>
+                        <label>Nombre de la Promoción:</label>
+                        <input
+                            className={`${shared.input} ${styles.input}`}
+                            type="text"
+                            placeholder="Nombre de la promoción"
+                            value={formData.denominacion}
+                            onChange={e => setFormData({ ...formData, denominacion: e.target.value })}
+                            disabled={isLoading}
+                        />
+                        
                         <label>Fecha de Inicio:</label>
                         <input
                             className={`${shared.input} ${styles.input}`}
@@ -378,6 +436,42 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
                                     No hay items agregados. Haga clic en "Agregar Item" para comenzar.
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Columna 3: Imagen */}
+                    <div className={styles.editarModalCol} style={{ alignItems: "center", justifyContent: "center", maxWidth: "200px" }}>
+                        <label>Imagen de la Promoción:</label>
+                        <div className={styles.imageUploadContainer}>
+                            <div className={styles.imagePreviewArea} style={{ width: 150, height: 150 }}>
+                                {previewUrl ? (
+                                    <img
+                                        src={previewUrl}
+                                        alt="Vista previa"
+                                        className={styles.imagePreview}
+                                    />
+                                ) : (
+                                    <div className={styles.noImagePlaceholder}>
+                                        Sin imagen
+                                    </div>
+                                )}
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                                disabled={isLoading}
+                            />
+                            <button
+                                type="button"
+                                className={styles.selectImageButton}
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isLoading}
+                            >
+                                {isEditMode ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
+                            </button>
                         </div>
                     </div>
                 </div>

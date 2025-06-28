@@ -313,3 +313,65 @@ VerItemModal.tsx
     margin: 10px 0;
     text-align: left;
 }
+
+/* =========================
+Estilos para carga de imágenes en PromocionModal
+========================= */
+
+/* Contenedor para carga de imágenes */
+.imageUploadContainer {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Área de previsualización de imagen */
+.imagePreviewArea {
+    width: 150px;
+    height: 150px;
+    border: 1px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Estilos para la imagen previsualizada */
+.imagePreview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Placeholder cuando no hay imagen */
+.noImagePlaceholder {
+    color: #999;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Botón para seleccionar imagen */
+.selectImageButton {
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+/* Efecto hover para botón de imagen */
+.selectImageButton:hover {
+    background-color: #e0e0e0;
+}
+
+/* Estado deshabilitado del botón */
+.selectImageButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

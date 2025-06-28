@@ -94,7 +94,7 @@ const SideBar: FC<SideBarProps> = ({ open = false, onClose }) => {
                         </NavLink>
                     </li>
                 )}
-                {hasAccess(["Cajero", "Cocinero"]) && (
+                {hasAccess(["Cajero", "Cocinero", "Delivery"]) && (
                     <li>
                         <NavLink 
                             to="/admin/gestion"
@@ -118,18 +118,7 @@ const SideBar: FC<SideBarProps> = ({ open = false, onClose }) => {
                         </NavLink>
                     </li>
                 )}
-                {hasAccess(["Administrador"]) && (
-                    <li>
-                        <NavLink 
-                            to="/admin/seguridad"
-                            className={({ isActive }) => 
-                                `${styles.menuButton} ${isActive ? styles.selected : ""}`
-                            }
-                        >
-                            Seguridad
-                        </NavLink>
-                    </li>
-                )}
+                
             </ul>
         </aside>
     );

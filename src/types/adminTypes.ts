@@ -457,10 +457,15 @@ export type PromocionDetalleApi = {
  */
 export type PromocionApi = {
     id: number;
+    denominacion: string;           // Nuevo campo
     fechaInicio: string;
     fechaFin: string;
     descuento: number;
     precio?: number;
+    imagen: {                       // Nuevo campo
+        id?: number;
+        urlImagen: string;
+    };
     detalles: PromocionDetalleApi[];
 };
 
