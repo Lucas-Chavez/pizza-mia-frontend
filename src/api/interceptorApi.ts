@@ -1,4 +1,5 @@
 import axios, { AxiosResponse, AxiosError } from 'axios';
+import { getCurrentToken, clearAuthData } from '../utils/authUtils';
 
 // Crear instancia de axios
 const interceptorApi = axios.create({
@@ -12,17 +13,10 @@ const interceptorApi = axios.create({
 // Interceptor de solicitudes (request)
 interceptorApi.interceptors.request.use(
     (config) => {
-        // Agregar token de autenticación si existe
-        const userString = localStorage.getItem('user');
-        if (userString) {
-            try {
-                const user = JSON.parse(userString);
-                if (user.token) {
-                    config.headers.Authorization = `Bearer ${user.token}`;
-                }
-            } catch (error) {
-                console.error('Error parsing user token:', error);
-            }
+        // Agregar token de autenticación desde el store de Zustand
+        const token = getCurrentToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
 
         // Log de la petición (solo en desarrollo)
@@ -62,8 +56,9 @@ interceptorApi.interceptors.response.use(
                     throw new Error(`Error 400: ${data?.message || data?.error || 'Error en la solicitud'}`);
                 case 401:
                     console.error('❌ Unauthorized: Token inválido o expirado');
-                    // Opcional: Redirigir al login
-                    localStorage.removeItem('user');
+                    // Limpiar el store de autenticación usando la utilidad
+                    clearAuthData();
+                    // Redirigir al login
                     window.location.href = '/admin/login';
                     throw new Error('Error 401: No autorizado');
                 case 403:
