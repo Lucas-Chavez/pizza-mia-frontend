@@ -448,7 +448,7 @@ export type PromocionDetalleApi = {
     id?: number;
     cantidad: number;
     articuloManufacturado?: { id: number } | null; // Hacer opcional
-    articuloInsumo?: { id: number } | null;        // Hacer opcional
+    articuloInsumo?: { id: number, esParaElbarar: boolean } | null;        // Hacer opcional
 };
 
 /**

@@ -50,7 +50,7 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
                                 articuloInsumoId: "",
                                 cantidad: detalle.cantidad || 1
                             };
-                        } else if (detalle.articuloInsumo && detalle.articuloInsumo.id > 0) {
+                        } else if (detalle.articuloInsumo && detalle.articuloInsumo.id > 0 && detalle.articuloInsumo) {
                             return {
                                 tipo: 'insumo',
                                 articuloManufacturadoId: "",
@@ -400,11 +400,14 @@ export const PromocionModal: React.FC<PromocionModalProps> = ({
                                             style={{ flex: 2 }}
                                         >
                                             <option value="">Seleccione un insumo</option>
-                                            {insumos.map(insumo => (
-                                                <option key={insumo.id} value={insumo.id}>
-                                                    {insumo.denominacion} - ${insumo.precioVenta?.toFixed(2)}
-                                                </option>
-                                            ))}
+                                            {insumos
+                                                .filter(insumo => !insumo.esParaElaborar) // 🔧 FILTRO AGREGADO
+                                                .map(insumo => (
+                                                    <option key={insumo.id} value={insumo.id}>
+                                                        {insumo.denominacion} - ${insumo.precioVenta?.toFixed(2)}
+                                                    </option>
+                                                ))
+                                            }
                                         </select>
                                     )}
                                     

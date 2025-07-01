@@ -5,6 +5,7 @@ import { CallbackPage } from '../pages/CallbackPage';
 import { LoginRedirect } from '../pages/LoginRedirect';
 import HomePage from '../pages/HomePage';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
+import { UserBlocked } from '../pages/UserBlocked';
 
 const AppRoutes = () => {
     return (
@@ -14,6 +15,8 @@ const AppRoutes = () => {
             <Route path="/login-redirect" element={<LoginRedirect />} />
             <Route path="/callback" element={<CallbackPage />} />
             <Route path="/access-denied" element={<AccessDenied />} />
+            <Route path="/user-blocked" element={<UserBlocked />} />
+
 
             {/* Redirecciones para rutas principales */}
             <Route 
